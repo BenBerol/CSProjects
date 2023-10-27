@@ -2,4 +2,4 @@
 
 Computer Science Air Hockey Game
 
-Made with Ian Beaupain
+## Made with Ian Beaupain
