@@ -6,8 +6,9 @@ ctx.height = window.innerHeight;
 
 const Colliders = []
 const GameObjects = []
-const mapSize = 2
-const density = 30
+const mapSize = 3
+const density = 8
+const speed = 14
 var Inputs = []
 var KeyUp = []
 var P1MoveRight = false
@@ -32,20 +33,6 @@ function Create2DArray(rows, columns)
         }
     }
     return matrix
-}
-
-function UpdatePlayerVel(player)
-{
-    if(P1MoveRight == true)
-    {
-        Player1.RigidBody2D.velocity.x = 5;
-    }
-    else if(P1MoveLeft == true)
-    {
-        Player1.RigidBody2D.velocity.x = -5;
-    }
-    else
-        Player1.RigidBody2D.velocity.x = 0;
 }
 
 class GameObject
@@ -148,9 +135,12 @@ class RigidBody2D extends Component
     }
     Update()
     {
-        this.velocity.y += this.gravity
-        this.velocity.x *= this.drag;
-        this.velocity.y *= this.drag;
+        this.speed = Math.sqrt(Math.pow(this.velocity.x, 2) + Math.pow(this.velocity.y, 2))
+        while(this.speed > speed) {
+            this.velocity.x *= 0.99
+            this.velocity.y *= 0.99
+            this.speed = Math.sqrt(Math.pow(this.velocity.x, 2) + Math.pow(this.velocity.y, 2))
+        }
         if (this.gameObject.name == "Circle_Red") {
             this.gameObject.transform.relativePosition.x += this.velocity.x
             this.gameObject.transform.relativePosition.y += this.velocity.y
@@ -159,6 +149,9 @@ class RigidBody2D extends Component
             this.gameObject.transform.position.x += this.velocity.x
             this.gameObject.transform.position.y += this.velocity.y
         }
+        this.velocity.y += this.gravity
+        this.velocity.x *= this.drag;
+        this.velocity.y *= this.drag;
     }
     OnSquareCollisionEnter(Collider)
     {
@@ -292,20 +285,20 @@ class Movement extends Component {
         }
         
         if (this.moveUp == true) {
-            this.gameObject.RigidBody2D.velocity.y += -this.speed  
+            this.gameObject.RigidBody2D.velocity.y = -this.speed  
         }
         else if (this.moveDown == true) {
-            this.gameObject.RigidBody2D.velocity.y += this.speed
+            this.gameObject.RigidBody2D.velocity.y = this.speed
         }
         else {
             this.gameObject.RigidBody2D.velocity.y = 0
         }
 
         if (this.moveRight == true) {
-            this.gameObject.RigidBody2D.velocity.x += this.speed
+            this.gameObject.RigidBody2D.velocity.x = this.speed
         }
         else if (this.moveLeft == true) {
-            this.gameObject.RigidBody2D.velocity.x += -this.speed
+            this.gameObject.RigidBody2D.velocity.x = -this.speed
         }
         else {
             this.gameObject.RigidBody2D.velocity.x = 0
@@ -320,14 +313,14 @@ function CreateNewCircle()
     let B = Math.random()*255
 
     Player2 = new GameObject({name: "Dot"})
-    Player2.AddComponent(new RigidBody2D({velocity: {x:0,y:0}, gravity: 0, drag: 0.75, bounce: 0}, Player2))
+    Player2.AddComponent(new RigidBody2D({velocity: {x:0,y:0}, gravity: 0, drag: 0, bounce: 0}, Player2))
     Player2.AddComponent(new Sprite({size: {x: 50, y: 50}, color: `rgb(${R}, ${G}, ${B})`, shape: "circle"}, Player2))
-    Player2.AddComponent(new Movement({up: 's', down: 'w', left: 'd', right: 'a', speed: 4}, Player2))
+    Player2.AddComponent(new Movement({up: 's', down: 'w', left: 'd', right: 'a', speed: speed*2}, Player2))
     Player2.AddComponent(new CircleCollider({size: {x: Player2.Sprite.size.x, y: Player2.Sprite.size.y}}, Player2))
 
     Player2.transform.position = {
-        x:(window.innerWidth*mapSize)*Math.random()-(mapSize/2 - 0.5)*window.innerWidth, 
-        y:(window.innerHeight*mapSize)*Math.random()-(mapSize/2 - 0.5)*window.innerHeight
+        x:((window.innerWidth*mapSize)*Math.random()-(mapSize/2 - 0.5)*window.innerWidth)*0.95, 
+        y:((window.innerHeight*mapSize)*Math.random()-(mapSize/2 - 0.5)*window.innerHeight)*0.95
     };
     dx = Math.abs(Player2.transform.position.x-Player1.transform.position.x)
     dy = Math.abs(Player2.transform.position.y-Player1.transform.position.y)
@@ -359,22 +352,35 @@ function Update()
 
 Background = new GameObject({name: "Background"})
 Background.AddComponent(new Sprite({size: {x: 2000, y: 1000}, color: "white", shape: "rect"}, Background))
-
 Background.transform.position = {x: 0, y:0}
 
+LeftWall = new GameObject({name: "leftWall"})
+LeftWall.AddComponent(new Sprite ({size: {x:1000, y:window.innerHeight*mapSize}, color: "black", shape: "rect"}, LeftWall))
+LeftWall.AddComponent(new RigidBody2D({velocity: {x:0,y:0}, gravity: 0, drag: 0, bounce: 0}, LeftWall))
+LeftWall.AddComponent(new Movement({up: 's', down: 'w', left: 'd', right: 'a', speed: speed*2}, LeftWall))
+LeftWall.transform.position = {x: -window.innerWidth * (mapSize-1)/2-LeftWall.Sprite.size.x, y: -window.innerHeight * (mapSize-1)/2}
+
+RightWall = new GameObject({name: "RightWall"})
+RightWall.AddComponent(new Sprite ({size: {x:1000, y:window.innerHeight*mapSize}, color: "black", shape: "rect"}, RightWall))
+RightWall.AddComponent(new RigidBody2D({velocity: {x:0,y:0}, gravity: 0, drag: 0, bounce: 0}, RightWall))
+RightWall.AddComponent(new Movement({up: 's', down: 'w', left: 'd', right: 'a', speed: speed*2}, RightWall))
+RightWall.transform.position = {x: window.innerWidth * (mapSize+1)/2, y: -window.innerHeight * (mapSize-1)/2}
+
 Player1 = new GameObject({name: "Circle_Red"})
-Player1.AddComponent(new RigidBody2D({velocity: {x:0,y:0}, gravity: 0, drag: 0.75, bounce: 0}, Player1))
+Player1.AddComponent(new RigidBody2D({velocity: {x:0,y:0}, gravity: 0, drag: 0, bounce: 0}, Player1))
 Player1.AddComponent(new Sprite({size: {x: 80, y: 80}, color: "rgb(225, 10, 10)", shape: "circle"}, Player1))
 Player1.AddComponent(new CircleCollider({size: {x: Player1.Sprite.size.x, y: Player1.Sprite.size.y}}, Player1))
-Player1.AddComponent(new Movement({up: 'w', down: 's', left: 'a', right: 'd', speed: 4}, Player1))
+Player1.AddComponent(new Movement({up: 'w', down: 's', left: 'a', right: 'd', speed: speed*2}, Player1))
 
 GameObjects.push(Background);
 
-for (let i = 0; i < mapSize*density; i++) {
+for (let i = 0; i < mapSize*mapSize*density; i++) {
     CreateNewCircle()
 }
 
 GameObjects.push(Player1);
+GameObjects.push(LeftWall)
+GameObjects.push(RightWall)
 
 
 
