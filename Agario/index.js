@@ -107,10 +107,10 @@ Draw()
         c.fillRect(this.gameObject.transform.position.x, this.gameObject.transform.position.y, this.size.x, this.size.y);
     }
     if (this.shape == "circle") {
-        c.beginPath();
-        c.arc(this.gameObject.transform.position.x, this.gameObject.transform.position.y, this.size.x, 0, 2 * Math.PI);
-        c.fill();
-        c.closePath();
+            c.beginPath();
+            c.arc(this.gameObject.transform.position.x, this.gameObject.transform.position.y, this.size.x, 0, 2 * Math.PI);
+            c.fill();
+            c.closePath();
     }
 }
 Update()
@@ -134,75 +134,44 @@ Update() {
 
 class RigidBody2D extends Component
 {
-constructor({velocity, gravity, drag, bounce}, gameObject)
-{
-super(gameObject)
-this.velocity = velocity
-this.gravity = gravity
-this.drag = drag
-this.gameObject.RigidBody2D = this;
-this.bounce = bounce
-}
-Update()
-{
-this.velocity.y += this.gravity
-this.velocity.x *= this.drag;
-this.velocity.y *= this.drag;
-this.gameObject.transform.position.x += this.velocity.x
-this.gameObject.transform.position.y += this.velocity.y
-}
-OnSquareCollisionEnter(Collider)
-{
-this.gameObject.transform.position.x -= this.velocity.x
-this.gameObject.transform.position.y -= this.velocity.y
-this.velocity = {x: -1*(this.bounce*this.velocity.x), y: -1*(this.bounce * this.velocity.y)};
-
-console.log("hit")
-}
-OnCircleCollisionEnter(Collider) 
-{
-    this.otherCollider = Collider;
-
-    dx = Math.abs(this.otherCollider.gameObject.transform.position.x-this.gameObject.transform.position.x)
-    dy = Math.abs(this.otherCollider.gameObject.transform.position.y-this.gameObject.transform.position.y)
-    distance = Math.sqrt(dx * dx + dy * dy)
-
-    if (distance < this.gameObject.Collider.size.x) {
-        let index = GameObjects.indexOf(this.otherCollider.gameObject)
-        GameObjects.splice(index, 1)
-        console.log(GameObjects)
-        console.log(this.gameObject)
+    constructor({velocity, gravity, drag, bounce}, gameObject)
+    {
+        super(gameObject)
+        this.velocity = velocity
+        this.gravity = gravity
+        this.drag = drag
+        this.gameObject.RigidBody2D = this;
+        this.bounce = bounce
     }
+    Update()
+    {
+        this.velocity.y += this.gravity
+        this.velocity.x *= this.drag;
+        this.velocity.y *= this.drag;
+        this.gameObject.transform.position.x += this.velocity.x
+        this.gameObject.transform.position.y += this.velocity.y
+    }
+    OnSquareCollisionEnter(Collider)
+    {
+        this.gameObject.transform.position.x -= this.velocity.x
+        this.gameObject.transform.position.y -= this.velocity.y
+        this.velocity = {x: -1*(this.bounce*this.velocity.x), y: -1*(this.bounce * this.velocity.y)};
+    }
+    OnCircleCollisionEnter(Collider) 
+    {
+        this.otherCollider = Collider;
 
-    // var totalVelX = this.velocity.x - this.otherCollider.gameObject.RigidBody2D.velocity.x;
-    // var totalVelY = this.velocity.y - this.otherCollider.gameObject.RigidBody2D.velocity.y;
-    
-    // var orthagonalVectorX = this.otherCollider.gameObject.transform.position.x - this.gameObject.transform.position.x;
-    // var orthagonalVectorY = this.otherCollider.gameObject.transform.position.y - this.gameObject.transform.position.y;
+        dx = Math.abs(this.otherCollider.gameObject.transform.position.x-this.gameObject.transform.position.x)
+        dy = Math.abs(this.otherCollider.gameObject.transform.position.y-this.gameObject.transform.position.y)
+        distance = Math.sqrt(dx * dx + dy * dy)
 
-    // var orthagonalVectorLength = Math.sqrt(orthagonalVectorX * orthagonalVectorX + orthagonalVectorY*orthagonalVectorY);
-
-    // orthagonalVectorX /= orthagonalVectorLength;
-    // orthagonalVectorY /= orthagonalVectorLength;
-
-    // var totalVelAlongOrthagonal = orthagonalVectorX * totalVelX + orthagonalVectorY * totalVelY;
-
-    // var dVelX = -2 * totalVelAlongOrthagonal * orthagonalVectorX;
-    // var dVelY = -2 * totalVelAlongOrthagonal * orthagonalVectorY;
-
-    // this.gameObject.transform.position.x -= this.velocity.x;
-    // this.gameObject.transform.position.y -= this.velocity.y;
-
-    // this.velocity.x += dVelX;
-    // this.velocity.y += dVelY;
-    // this.otherCollider.gameObject.RigidBody2D.velocity.x -= dVelX;
-    // this.otherCollider.gameObject.RigidBody2D.velocity.y -= dVelY;
-
-    // this.velocity.x *= this.bounce;
-    // this.velocity.y *= this.bounce;
-    // this.otherCollider.gameObject.RigidBody2D.velocity.x *= this.otherCollider.gameObject.RigidBody2D.bounce;
-    // this.otherCollider.gameObject.RigidBody2D.velocity.y *= this.otherCollider.gameObject.RigidBody2D.bounce;
-}
+        if (distance < this.gameObject.Collider.size.x) {
+            let index = GameObjects.indexOf(this.otherCollider.gameObject)
+            GameObjects.splice(index, 1)
+            index = Colliders.indexOf(this.otherCollider)
+            Colliders.splice(index, 1)
+        }
+    }
 }
 
 class SquareCollider extends Component
@@ -230,7 +199,7 @@ this.OnCollisionEnter(Collider);
 }
 OnCollisionEnter(Collider)
 {
-this.gameObject.OnSquareCollisionEnter(Collider)
+    this.gameObject.OnSquareCollisionEnter(Collider)
 }
 }
 
@@ -265,7 +234,7 @@ class CircleCollider extends Component {
 }
 
 class Movement extends Component {
-constructor({up, down, left, right, speed, moveUp, moveLeft, moveRight, moveDown}, gameObject)
+constructor({up, down, left, right, speed}, gameObject)
 {
 super(gameObject);
 this.up = up
@@ -312,27 +281,48 @@ this.moveLeft = false;
 }
 }
 if (this.moveUp == true) {
-this.gameObject.RigidBody2D.velocity.y += -this.speed
+    this.gameObject.RigidBody2D.velocity.y += -this.speed  
 }
 else if (this.moveDown == true) {
-this.gameObject.RigidBody2D.velocity.y += this.speed
+    this.gameObject.RigidBody2D.velocity.y += this.speed
 }
 else {
-this.gameObject.RigidBody2D.velocity.y = 0
+    this.gameObject.RigidBody2D.velocity.y = 0
 }
 
 if (this.moveRight == true) {
-this.gameObject.RigidBody2D.velocity.x += this.speed
+    this.gameObject.RigidBody2D.velocity.x += this.speed
 }
 else if (this.moveLeft == true) {
-this.gameObject.RigidBody2D.velocity.x += -this.speed
+    this.gameObject.RigidBody2D.velocity.x += -this.speed
 }
 else {
-this.gameObject.RigidBody2D.velocity.x = 0
+    this.gameObject.RigidBody2D.velocity.x = 0
 }
 }
 }
 
+function CreateNewCircle()
+{
+    Player2 = new GameObject({name: "Circle_Blue"})
+    Player2.AddComponent(new RigidBody2D({velocity: {x:0,y:0}, gravity: 0, drag: 0.75, bounce: 0}, Player2))
+    Player2.AddComponent(new Sprite({size: {x: 50, y: 50}, color: "blue", shape: "circle"}, Player2))
+    Player2.AddComponent(new Movement({up: 's', down: 'w', left: 'd', right: 'a', speed: 4}, Player2))
+    Player2.AddComponent(new CircleCollider({size: {x: Player2.Sprite.size.x, y: Player2.Sprite.size.y}}, Player2))
+
+    Player2.transform.position = {x:(window.innerHeight*5)*Math.random(), y:(window.innerWidth*5)*Math.random()};
+    dx = Math.abs(Player2.transform.position.x-Player1.transform.position.x)
+    dy = Math.abs(Player2.transform.position.y-Player1.transform.position.y)
+    distance = Math.sqrt(dx * dx + dy * dy)
+    while(distance < (Player1.Collider.size.x + Player2.Sprite.size.x))
+    {
+        Player2.transform.position = {x:window.innerHeight*Math.random(), y:window.innerWidth*Math.random()};
+        dx = Math.abs(Player2.transform.position.x-Player1.transform.position.x)
+        dy = Math.abs(Player2.transform.position.y-Player1.transform.position.y)
+        distance = Math.sqrt(dx * dx + dy * dy)
+    }
+    GameObjects.push(Player2)
+}
 
 function Update()
 {
@@ -354,29 +344,13 @@ Player1.AddComponent(new RigidBody2D({velocity: {x:0,y:0}, gravity: 0, drag: 0.7
 Player1.AddComponent(new Sprite({size: {x: 80, y: 80}, color: "red", shape: "circle"}, Player1))
 Player1.AddComponent(new CircleCollider({size: {x: Player1.Sprite.size.x, y: Player1.Sprite.size.y}}, Player1))
 
+
 Player1.transform.position = {x:window.innerWidth/2, y:window.innerHeight/2};
 
 GameObjects.push(Background);
 
-for (let i = 0; i < 10; i++) {
-    Player2 = new GameObject({name: "Circle_Blue"})
-    Player2.AddComponent(new RigidBody2D({velocity: {x:0,y:0}, gravity: 0, drag: 0.75, bounce: 0}, Player2))
-    Player2.AddComponent(new Sprite({size: {x: 50, y: 50}, color: "blue", shape: "circle"}, Player2))
-    Player2.AddComponent(new Movement({up: 's', down: 'w', left: 'd', right: 'a', speed: 4}, Player2))
-    Player2.AddComponent(new CircleCollider({size: {x: Player2.Sprite.size.x, y: Player2.Sprite.size.y}}, Player2))
-
-    Player2.transform.position = {x:window.innerHeight*Math.random(), y:window.innerWidth*Math.random()};
-    dx = Math.abs(Player2.transform.position.x-Player1.transform.position.x)
-    dy = Math.abs(Player2.transform.position.y-Player1.transform.position.y)
-    distance = Math.sqrt(dx * dx + dy * dy)
-    while(distance < (Player1.Collider.size.x + Player2.Sprite.size.x))
-    {
-        Player2.transform.position = {x:window.innerHeight*Math.random(), y:window.innerWidth*Math.random()};
-        dx = Math.abs(Player2.transform.position.x-Player1.transform.position.x)
-        dy = Math.abs(Player2.transform.position.y-Player1.transform.position.y)
-        distance = Math.sqrt(dx * dx + dy * dy)
-    }
-    GameObjects.push(Player2)
+for (let i = 0; i < 100; i++) {
+    CreateNewCircle()
 }
 
 GameObjects.push(Player1);
