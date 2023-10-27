@@ -1,5 +1,4 @@
 //DISCLAIMER: Asked ChatGPT for advice on how to calculate orthagonal collision vectors but didn't copy paste
-//test
 
 const ctx = document.querySelector("canvas");
 const c = ctx.getContext('2d');
