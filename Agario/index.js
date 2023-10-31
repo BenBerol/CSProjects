@@ -9,6 +9,7 @@ const GameObjects = []
 const mapSize = 12
 const density = 8
 const maxSpeed = 14
+const growthRate = 0.25
 var Inputs = []
 var KeyUp = []
 var P1MoveRight = false
@@ -87,8 +88,9 @@ class Sprite extends Component
         this.size = size;
         this.color = color;
         this.shape = shape;
-        this.text = text || ""
+        this.text = text || null
         this.gameObject.Sprite = this;
+        this.fontSize = 30
     }
     Draw()
     {
@@ -106,7 +108,7 @@ class Sprite extends Component
                 c.fillStyle = "black";
                 c.textAlign = "center";
                 c.textBaseline = "middle";
-                c.font = "30px Impact"; 
+                c.font = this.fontSize + "px Impact"; 
                 c.fillText(this.text, this.gameObject.transform.position.x, this.gameObject.transform.position.y);
             }
         }
@@ -176,16 +178,20 @@ class RigidBody2D extends Component
         dy = Math.abs(this.otherCollider.gameObject.transform.position.y-this.gameObject.transform.position.y)
         distance = Math.sqrt(dx * dx + dy * dy)
 
-        if (distance < this.gameObject.Collider.size.x) {
+        if (distance < this.gameObject.Collider.size.x && this.gameObject.Sprite.text > this.otherCollider.gameObject.Sprite.text) {
             let index = GameObjects.indexOf(this.otherCollider.gameObject)
             GameObjects.splice(index, 1)
             index = Colliders.indexOf(this.otherCollider)
             Colliders.splice(index, 1)
-            Player1.Sprite.size.x += 5
+            this.scaleFactor = this.otherCollider.gameObject.Sprite.text/Player1.Sprite.text
+            console.log("*" + (1.0+this.scaleFactor))
+            this.scaleFactor = Math.sqrt(1+this.scaleFactor*growthRate)
+            Player1.Sprite.size.x *= this.scaleFactor
+            Player1.Sprite.text += this.otherCollider.gameObject.Sprite.text
+            Player1.Sprite.fontSize *= this.scaleFactor
             Player1.Components.forEach(component => {
                 if (component instanceof CircleCollider) {
-                    component.size.x += 5;
-                    console.log(component)
+                    component.size.x *= this.scaleFactor;
                 }
             });
         }
@@ -324,13 +330,13 @@ class Movement extends Component {
 
 function CreateNewCircle()
 {
-    let R = Math.random()*255
-    let G = Math.random()*255
-    let B = Math.random()*255
+    let R = Math.random()*200+30
+    let G = Math.random()*200+30
+    let B = Math.random()*200+30
 
     Player2 = new GameObject({name: "Dot"})
     Player2.AddComponent(new RigidBody2D({velocity: {x:0,y:0}, gravity: 0, drag: 0.75, bounce: 0}, Player2))
-    Player2.AddComponent(new Sprite({size: {x: 50, y: 50}, color: `rgb(${R}, ${G}, ${B})`, shape: "circle", text:"10"}, Player2))
+    Player2.AddComponent(new Sprite({size: {x: 50, y: 50}, color: `rgb(${R}, ${G}, ${B})`, shape: "circle", text:Math.floor(Math.random()*1000+1)}, Player2))
     Player2.AddComponent(new Movement({up: 's', down: 'w', left: 'd', right: 'a', speed: 4}, Player2))
     Player2.AddComponent(new CircleCollider({size: {x: Player2.Sprite.size.x, y: Player2.Sprite.size.y}}, Player2))
 
@@ -388,7 +394,7 @@ Background.transform.position = {x: 0, y:0}
 
 Player1 = new GameObject({name: "Circle_Red"})
 Player1.AddComponent(new RigidBody2D({velocity: {x:0,y:0}, gravity: 0, drag: 0.75, bounce: 0}, Player1))
-Player1.AddComponent(new Sprite({size: {x: 80, y: 80}, color: "rgb(225, 10, 10)", shape: "circle", text: 1000}, Player1))
+Player1.AddComponent(new Sprite({size: {x: 80, y: 80}, color: "rgb(225, 10, 10)", shape: "circle", text: 50}, Player1))
 Player1.AddComponent(new CircleCollider({size: {x: Player1.Sprite.size.x, y: Player1.Sprite.size.y}}, Player1))
 Player1.AddComponent(new Movement({up: 'w', down: 's', left: 'a', right: 'd', speed: 4}, Player1))
 
