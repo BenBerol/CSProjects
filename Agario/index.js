@@ -1,8 +1,8 @@
-const ctx = document.querySelector("canvas");
-const c = ctx.getContext('2d');
+const canvas = document.querySelector("canvas");
+const ctx = canvas.getContext('2d');
 
-ctx.width = window.innerWidth;
-ctx.height = window.innerHeight;
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
 
 const Colliders = []
 const GameObjects = []
@@ -10,6 +10,10 @@ const mapSize = 12
 const density = 8
 const maxSpeed = 14
 const growthRate = 0.25
+let Player1;
+let Background;
+let Player2;
+let TextBox;
 var Inputs = []
 var KeyUp = []
 var P1MoveRight = false
@@ -19,8 +23,8 @@ var P2MoveLeft = false
 
 
 
-c.font = "100px serif";
-c.fillStyle = "orange";
+ctx.font = "100px serif";
+ctx.fillStyle = "orange";
 
 function Create2DArray(rows, columns)
 {
@@ -82,34 +86,35 @@ class Component {
 
 class Sprite extends Component
 {
-    constructor({size, color, shape, text}, gameObject)
+    constructor({size, color, shape, text, textColor, fontSize}, gameObject)
     {
         super(gameObject)
         this.size = size;
         this.color = color;
         this.shape = shape;
         this.text = text || null
+        this.textColor = textColor || "black"
+        this.fontSize = fontSize || 30
         this.gameObject.Sprite = this;
-        this.fontSize = 30
     }
     Draw()
     {
-        c.fillStyle = this.color;
+        ctx.fillStyle = this.color;
         if (this.shape == "rect") {
-            c.fillRect(this.gameObject.transform.position.x, this.gameObject.transform.position.y, this.size.x, this.size.y);
+            ctx.fillRect(this.gameObject.transform.position.x, this.gameObject.transform.position.y, this.size.x, this.size.y);
         }
         if (this.shape == "circle") {
-            c.beginPath();
-            c.arc(this.gameObject.transform.position.x, this.gameObject.transform.position.y, this.size.x, 0, 2 * Math.PI);
-            c.fill();
-            c.closePath();
+            ctx.beginPath();
+            ctx.arc(this.gameObject.transform.position.x, this.gameObject.transform.position.y, this.size.x, 0, 2 * Math.PI);
+            ctx.fill();
+            ctx.closePath();
 
             if (this.text) {
-                c.fillStyle = "black";
-                c.textAlign = "center";
-                c.textBaseline = "middle";
-                c.font = this.fontSize + "px Impact"; 
-                c.fillText(this.text, this.gameObject.transform.position.x, this.gameObject.transform.position.y);
+                ctx.fillStyle = this.textColor;
+                ctx.textAlign = "center";
+                ctx.textBaseline = "middle";
+                ctx.font = this.fontSize + "px Impact"; 
+                ctx.fillText(this.text, this.gameObject.transform.position.x, this.gameObject.transform.position.y);
             }
         }
     }
@@ -117,7 +122,7 @@ class Sprite extends Component
     {
         this.Draw();
     }
-    }
+}
 
 class Transform extends Component
 {
@@ -174,11 +179,28 @@ class RigidBody2D extends Component
     {
         this.otherCollider = Collider;
 
-        dx = Math.abs(this.otherCollider.gameObject.transform.position.x-this.gameObject.transform.position.x)
-        dy = Math.abs(this.otherCollider.gameObject.transform.position.y-this.gameObject.transform.position.y)
-        distance = Math.sqrt(dx * dx + dy * dy)
+        this.dx = Math.abs(this.otherCollider.gameObject.transform.position.x-this.gameObject.transform.position.x)
+        this.dy = Math.abs(this.otherCollider.gameObject.transform.position.y-this.gameObject.transform.position.y)
+        this.distance = Math.sqrt(this.dx * this.dx + this.dy * this.dy)
 
-        if (distance < this.gameObject.Collider.size.x && this.gameObject.Sprite.text > this.otherCollider.gameObject.Sprite.text) {
+        if (this.distance < this.gameObject.Collider.size.x && this.gameObject.Sprite.text > this.otherCollider.gameObject.Sprite.text) {
+            let index = GameObjects.indexOf(this.otherCollider.gameObject)
+            GameObjects.splice(index, 1)
+            index = Colliders.indexOf(this.otherCollider)
+            Colliders.splice(index, 1)
+            this.scaleFactor = this.otherCollider.gameObject.Sprite.text/Player1.Sprite.text
+            console.log("*" + (1.0+this.scaleFactor))
+            this.scaleFactor = Math.sqrt(1+this.scaleFactor*growthRate)
+            Player1.Sprite.size.x *= this.scaleFactor
+            Player1.Sprite.text += this.otherCollider.gameObject.Sprite.text
+            Player1.Sprite.fontSize *= this.scaleFactor
+            Player1.Components.forEach(component => {
+                if (component instanceof CircleCollider) {
+                    component.size.x *= this.scaleFactor;
+                }
+            });
+        }
+        else if (this.distance < this.gameObject.Collider.size.x && this.gameObject.Sprite.text < this.otherCollider.gameObject.Sprite.text) {
             let index = GameObjects.indexOf(this.otherCollider.gameObject)
             GameObjects.splice(index, 1)
             index = Colliders.indexOf(this.otherCollider)
@@ -330,9 +352,9 @@ class Movement extends Component {
 
 function CreateNewCircle()
 {
-    let R = Math.random()*200+30
-    let G = Math.random()*200+30
-    let B = Math.random()*200+30
+    let R = Math.random()*175+50
+    let G = Math.random()*175+50
+    let B = Math.random()*175+30
 
     Player2 = new GameObject({name: "Dot"})
     Player2.AddComponent(new RigidBody2D({velocity: {x:0,y:0}, gravity: 0, drag: 0.75, bounce: 0}, Player2))
@@ -344,15 +366,15 @@ function CreateNewCircle()
         x:((window.innerWidth*mapSize)*Math.random()-(mapSize/2 - 0.5)*window.innerWidth)*0.95, 
         y:((window.innerHeight*mapSize)*Math.random()-(mapSize/2 - 0.5)*window.innerHeight)*0.95
     };
-    dx = Math.abs(Player2.transform.position.x-Player1.transform.position.x)
-    dy = Math.abs(Player2.transform.position.y-Player1.transform.position.y)
-    distance = Math.sqrt(dx * dx + dy * dy)
-    while(distance < (Player1.Collider.size.x + Player2.Sprite.size.x))
+    this.dx = Math.abs(Player2.transform.position.x-Player1.transform.position.x)
+    this.dy = Math.abs(Player2.transform.position.y-Player1.transform.position.y)
+    this.distance = Math.sqrt(this.dx * this.dx + this.dy * this.dy)
+    while(this.distance < (Player1.Collider.size.x + Player2.Sprite.size.x))
     {
         Player2.transform.position = {x:window.innerHeight*Math.random(), y:window.innerWidth*Math.random()};
-        dx = Math.abs(Player2.transform.position.x-Player1.transform.position.x)
-        dy = Math.abs(Player2.transform.position.y-Player1.transform.position.y)
-        distance = Math.sqrt(dx * dx + dy * dy)
+        this.dx = Math.abs(Player2.transform.position.x-Player1.transform.position.x)
+        this.dy = Math.abs(Player2.transform.position.y-Player1.transform.position.y)
+        this.distance = Math.sqrt(this.dx * this.dx + this.dy * this.dy)
     }
     GameObjects.push(Player2)
 }
@@ -398,6 +420,13 @@ Player1.AddComponent(new Sprite({size: {x: 80, y: 80}, color: "rgb(225, 10, 10)"
 Player1.AddComponent(new CircleCollider({size: {x: Player1.Sprite.size.x, y: Player1.Sprite.size.y}}, Player1))
 Player1.AddComponent(new Movement({up: 'w', down: 's', left: 'a', right: 'd', speed: 4}, Player1))
 
+
+
+TextBox = new GameObject({name: "TextBox"})
+TextBox.AddComponent(new Sprite({size: {x: 0, y:0}, color: "white", shape: "circle", text:"hi", textColor: "black"}, TextBox))
+TextBox.transform.position = {x: canvas.width/2, y: canvas.height/10}
+// TextBox.AddComponent(new Text({}))
+
 GameObjects.push(Background);
 
 for (let i = 0; i < mapSize*mapSize*density; i++) {
@@ -405,6 +434,7 @@ for (let i = 0; i < mapSize*mapSize*density; i++) {
 }
 
 GameObjects.push(Player1);
+GameObjects.push(TextBox)
 // GameObjects.push(LeftWall)
 // GameObjects.push(RightWall)
 // GameObjects.push(TopWall)
