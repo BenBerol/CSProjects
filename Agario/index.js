@@ -205,17 +205,27 @@ class RigidBody2D extends Component
             GameObjects.splice(index, 1)
             index = Colliders.indexOf(this.otherCollider)
             Colliders.splice(index, 1)
-            this.scaleFactor = this.otherCollider.gameObject.Sprite.text/Player1.Sprite.text
-            console.log("*" + (1.0+this.scaleFactor))
-            this.scaleFactor = Math.sqrt(1+this.scaleFactor*growthRate)
+            this.scaleFactor = 0.5
+            console.log("*" + (this.scaleFactor))
+            this.scaleFactor = Math.sqrt(this.scaleFactor*(1/growthRate))
             Player1.Sprite.size.x *= this.scaleFactor
-            Player1.Sprite.text += this.otherCollider.gameObject.Sprite.text
             Player1.Sprite.fontSize *= this.scaleFactor
+            Player1.Sprite.text = Math.floor(Player1.Sprite.text/2)
             Player1.Components.forEach(component => {
                 if (component instanceof CircleCollider) {
                     component.size.x *= this.scaleFactor;
                 }
             });
+            if (Player1.Sprite.text < 50) {
+                Player1.Sprite.fontSize = 30
+                Player1.Sprite.size.x = 80
+                Player1.Sprite.text = 50;
+                Player1.Components.forEach(component => {
+                    if (component instanceof CircleCollider) {
+                        component.size.x = 80;
+                    }
+                });
+            }
         }
     }
 }
