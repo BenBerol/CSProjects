@@ -140,7 +140,7 @@ class Transform extends Component
 
 class RigidBody2D extends Component
 {
-    constructor({velocity, gravity, drag, bounce}, gameObject)
+    constructor({velocity, gravity, drag, bounce, direction, momentum, variety}, gameObject)
     {
         super(gameObject)
         this.velocity = velocity
@@ -148,10 +148,15 @@ class RigidBody2D extends Component
         this.drag = drag
         this.gameObject.RigidBody2D = this;
         this.bounce = bounce
+        this.direction = direction || -1
+        this.momentum = momentum || 0
+        this.variety = variety || 0
     }
     Update()
     {
         this.speed = Math.sqrt(Math.pow(this.velocity.x, 2) + Math.pow(this.velocity.y, 2))
+        this.velocity.x += Math.cos(this.direction)*this.momentum
+        this.velocity.y += Math.sin(this.direction)*this.momentum
         while(this.speed > maxSpeed) {
             this.velocity.x *= 0.99
             this.velocity.y *= 0.99
@@ -168,6 +173,9 @@ class RigidBody2D extends Component
         this.velocity.y += this.gravity
         this.velocity.x *= this.drag;
         this.velocity.y *= this.drag;
+        if (this.direction != -1 && Math.random() < this.variety) {
+            this.direction = Math.random()*2*Math.PI
+        }
     }
     OnSquareCollisionEnter(Collider)
     {
@@ -201,6 +209,7 @@ class RigidBody2D extends Component
             });
         }
         else if (this.distance < this.gameObject.Collider.size.x && this.gameObject.Sprite.text < this.otherCollider.gameObject.Sprite.text) {
+            console.log(this.otherCollider.gameObject)
             let index = GameObjects.indexOf(this.otherCollider.gameObject)
             GameObjects.splice(index, 1)
             index = Colliders.indexOf(this.otherCollider)
@@ -345,7 +354,7 @@ class Movement extends Component {
             this.gameObject.RigidBody2D.velocity.y += this.speed
         }
         else {
-            this.gameObject.RigidBody2D.velocity.y = 0
+            // this.gameObject.RigidBody2D.velocity.y = 0
         }
 
         if (this.moveRight == true) {
@@ -355,7 +364,7 @@ class Movement extends Component {
             this.gameObject.RigidBody2D.velocity.x += -this.speed
         }
         else {
-            this.gameObject.RigidBody2D.velocity.x = 0
+            // this.gameObject.RigidBody2D.velocity.x = 0
         }
     }
 }
@@ -365,9 +374,11 @@ function CreateNewCircle()
     let R = Math.random()*175+50
     let G = Math.random()*175+50
     let B = Math.random()*175+30
+    
+    let direction = ((Math.random())*2*Math.PI)
 
     Player2 = new GameObject({name: "Dot"})
-    Player2.AddComponent(new RigidBody2D({velocity: {x:0,y:0}, gravity: 0, drag: 0.75, bounce: 0}, Player2))
+    Player2.AddComponent(new RigidBody2D({velocity: {x:0,y:0}, gravity: 0, drag: 0.75, bounce: 0, direction: direction, momentum: 0.75, variety: 0.01}, Player2))
     Player2.AddComponent(new Sprite({size: {x: 50, y: 50}, color: `rgb(${R}, ${G}, ${B})`, shape: "circle", text:Math.floor(Math.random()*1000+1)}, Player2))
     Player2.AddComponent(new Movement({up: 's', down: 'w', left: 'd', right: 'a', speed: 4}, Player2))
     Player2.AddComponent(new CircleCollider({size: {x: Player2.Sprite.size.x, y: Player2.Sprite.size.y}}, Player2))
