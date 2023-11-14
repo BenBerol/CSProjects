@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Single Player Stick Game</title>
+        <link rel="stylesheet" href="main2.css">
+    </head>
+    <body>
+        <h1>Dynamite Game!</h1>
+        <h2 id="firstPlayer">test</h2>
+        <h2 id="sticksLeft">21 Sticks Left</h2>
+        <form style = "font-size: 28x">
+            <label id="form">How many sticks would you like to remove? (1-4)</label><br>
+            <input type="number" id="num1" name="num1" onkeydown="handleKeyPress(event)"><br>
+        </form>
+        <br>
+        <button class="button" id = "mainButton" onclick =playerTurn()>SUBMIT</button>
+        <p id="listNums" style="font-size: 25px">Inputs</p>
+        <script src = index2.js></script>
+    </body>
+</html>

@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Single Player Stick Game</title>
+        <link rel="stylesheet" href="main2.css">
+    </head>
+    <body onload="startPageLoad()">
+        <script src = index2.js></script>
+        <h1>Dynamite Game!</h1>
+        <label style="font-size: 22px;">Play first or second?</label>
+        <select id="options" onchange="optionChange()" style="font-size: 20px;">
+            <option value="first">First</option>
+            <option value="second">Second</option>
+        </select>
+        <br>
+        <div id = "sliderContainer">
+            <label>Number of sticks: </label>
+            <input type="range" min = "11" max = "51" value = "1" class = "slider" id = "amtRange" style = "width: 150px;" onchange="sliderChange()">
+        </div>
+        <h2 id="numSticks">11</h2>
+        <button id = "mainButton" onclick="startGame()">Start Game</button>
+    </body>
+</html>
