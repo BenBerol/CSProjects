@@ -21,6 +21,7 @@ let Inputs = []
 let KeyUp = []
 let P1MoveRight = false
 let P1MoveLeft = false
+let gameOver = false;
 
 
 
@@ -111,23 +112,22 @@ class Sprite extends Component {
         if (this.shape == "lines") {
             
             const cellSize = this.size.x;
-            const rows = Math.floor(canvas.height / cellSize);
-            const columns = Math.floor(canvas.width / cellSize);
+            const rows = Math.floor(canvas.height / cellSize)+2;
+            const columns = Math.floor(canvas.width / cellSize)+2;
 
                 ctx.beginPath();
-                console.log(this.color)
                 ctx.strokeStyle = this.color;
 
-                for (let i = 0; i <= rows; i++) {
+                for (let i = -1; i <= rows; i++) {
                 const y = i * cellSize;
-                ctx.moveTo(0, y);
-                ctx.lineTo(canvas.width, y);
+                ctx.moveTo(0, y+(this.gameObject.transform.position.y%cellSize));
+                ctx.lineTo(canvas.width, y+(this.gameObject.transform.position.y%cellSize));
                 }
 
-                for (let i = 0; i <= columns; i++) {
+                for (let i = -1; i <= columns; i++) {
                 const x = i * cellSize;
-                ctx.moveTo(x, 0);
-                ctx.lineTo(x, canvas.height);
+                ctx.moveTo(x+(this.gameObject.transform.position.x%cellSize), 0);
+                ctx.lineTo(x+(this.gameObject.transform.position.x%cellSize), canvas.height);
                 }
 
                 ctx.stroke();
@@ -170,7 +170,6 @@ class RigidBody2D extends Component {
         this.gameObject.transform.position.x += this.velocity.x
         this.gameObject.transform.position.y += this.velocity.y
 
-        this.velocity.y += this.gravity
         this.velocity.x *= this.drag;
         this.velocity.y *= this.drag;
         if (this.direction != -1 && Math.random() < this.variety) {
@@ -208,14 +207,12 @@ class RigidBody2D extends Component {
             TextBox.Sprite.text = "Yum!"
         }
         else if (this.distance < this.gameObject.Collider.size.x && this.gameObject.Sprite.text < this.otherCollider.gameObject.Sprite.text) {
-            console.log(this.otherCollider.gameObject)
             let index = GameObjects.indexOf(this.otherCollider.gameObject)
             GameObjects.splice(index, 1)
             index = Colliders.indexOf(this.otherCollider)
             Colliders.splice(index, 1)
             let oldSize = Player1.Sprite.size.x
             Player1.Sprite.size.x = ((Player1.Sprite.size.x - 70) / (Math.sqrt(2) * growthRate)) + 70
-            console.log(Player1.Sprite.size.x)
             Player1.Sprite.fontSize *= Player1.Sprite.size.x / oldSize
             Player1.Sprite.text = Math.floor(Player1.Sprite.text / 2)
             Player1.Components.forEach(component => {
@@ -376,8 +373,29 @@ class MouseMovement extends Component {
                     gameObject.RigidBody2D.velocity.y -= Math.sin(angle) * this.speed
                 }
             });
-
         }
+    }
+}
+
+class Clock extends Component {
+    constructor({time}, gameObject) {
+        super(gameObject)
+        this.time = time+1
+        this.timeUp = false
+        this.updateTimer()
+    }
+    updateTimer() {
+        if (this.time > 0) {
+            this.time--
+            setTimeout(() => this.updateTimer(), 1000);;
+            this.gameObject.Sprite.text = "TIME REMAINING: " + this.time
+        }
+        else {
+            this.timeUp = true
+        }
+    }
+    Update() {
+        
     }
 }
 
@@ -392,7 +410,7 @@ function CreateNewCircle() {
     Player2 = new GameObject({ name: "Dot" })
     Player2.AddComponent(new RigidBody2D({ velocity: { x: 0, y: 0 }, gravity: 0, drag: 0.75, bounce: 0, direction: direction, momentum: momentum, variety: 0.01 }, Player2))
     Player2.AddComponent(new Sprite({ size: { x: 50, y: 50 }, color: `rgb(${R}, ${G}, ${B})`, shape: "circle", text: Math.floor(Math.random() * Player1.Sprite.text * 7 + 1) }, Player2))
-    Player2.AddComponent(new KeyboardMovement({ up: 's', down: 'w', left: 'd', right: 'a', speed: 4 }, Player2))
+    // Player2.AddComponent(new KeyboardMovement({ up: 's', down: 'w', left: 'd', right: 'a', speed: 4 }, Player2))
     Player2.AddComponent(new CircleCollider({ size: { x: Player2.Sprite.size.x, y: Player2.Sprite.size.y } }, Player2))
 
     Player2.transform.position = {
@@ -412,16 +430,16 @@ function CreateNewCircle() {
 }
 
 function Update() {
-    window.requestAnimationFrame(Update);
+    if (gameOver == false) {
+        window.requestAnimationFrame(Update);
 
-    for (let index = 0; index < GameObjects.length; index++) {
-        GameObjects[index].Update()
-    };
+        for (let index = 0; index < GameObjects.length; index++) {
+            GameObjects[index].Update()
+        };
 
-    Inputs = []
-    KeyUp = []
-    console.log(window.innerWidth)
-    console.log(window.innerHeight)
+        Inputs = []
+        KeyUp = []
+    }
 }
 
 Background = new GameObject({ name: "Background" })
@@ -430,6 +448,8 @@ Background.transform.position = { x: 0, y: 0 }
 
 BackgroundLines = new GameObject({ name: "BackgroundLines" })
 BackgroundLines.AddComponent(new Sprite({size:{x:30, y:30}, color: "rgb(223,230,233)", shape: "lines"}, BackgroundLines))
+BackgroundLines.AddComponent(new RigidBody2D({velocity: {x:0, y:0}, gravity:0, drag: 0.75, bounce:0}, BackgroundLines))
+BackgroundLines.transform.position = {x:0, y:0}
 
 Player1 = new GameObject({ name: "Circle_Red" })
 Player1.AddComponent(new RigidBody2D({ velocity: { x: 0, y: 0 }, gravity: 0, drag: 0.75, bounce: 0 }, Player1))
@@ -441,6 +461,10 @@ TextBox = new GameObject({ name: "TextBox" })
 TextBox.AddComponent(new Sprite({ size: { x: 0, y: 0 }, color: "white", shape: "circle", text: "Eat Smaller Circles to Get Bigger!", textColor: "black", fontSize: 50, globalAlpha: 0.75 }, TextBox))
 TextBox.transform.position = { x: canvas.width / 2, y: canvas.height / 10 }
 
+Timer = new GameObject({name: "Timer"})
+Timer.AddComponent(new Sprite({size: {x:0, y:0}, color: "white", shape:"circle", text:"TIME REMAINING: 60", textColor: "black", fontSize: 60, globalAlpha:0.75}, Timer))
+Timer.AddComponent(new Clock({time: 60}, Timer))
+Timer.transform.position = {x: canvas.width/2, y:canvas.height*9/10}
 
 
 GameObjects.push(Background);
@@ -452,6 +476,7 @@ for (let i = 0; i < mapSize * mapSize * density; i++) {
 
 GameObjects.push(Player1);
 GameObjects.push(TextBox)
+GameObjects.push(Timer)
 
 
 
