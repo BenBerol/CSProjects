@@ -9,7 +9,8 @@ const GameObjects = []
 const mapSize = 12
 const density = 8
 const maxSpeed = 14
-const growthRate = 1
+const growthRate = 2
+const startingNum = 10
 let Player1;
 let Background;
 let BackgroundLines
@@ -78,7 +79,7 @@ class Component {
 }
 
 class Sprite extends Component {
-    constructor({ size, color, shape, text, textColor, fontSize, globalAlpha }, gameObject) {
+    constructor({ size, color, shape, text, textColor, fontSize, globalAlpha, base}, gameObject) {
         super(gameObject)
         this.size = size;
         this.color = color;
@@ -87,7 +88,19 @@ class Sprite extends Component {
         this.textColor = textColor || "black"
         this.fontSize = fontSize || 30
         this.globalAlpha = globalAlpha || 1
+        this.base = base || 0
         this.gameObject.Sprite = this;
+
+        this.newText = ""
+
+        if (this.base > 0) {
+            let number = Number(this.text)
+            while (number > 0) {
+                let remainder = number % this.base;
+                this.newText = remainder + this.newText;
+                number = Math.floor(number / base);
+              }
+        }
     }
     Draw() {
         ctx.fillStyle = this.color;
@@ -106,14 +119,20 @@ class Sprite extends Component {
                 ctx.textAlign = "center";
                 ctx.textBaseline = "middle";
                 ctx.font = this.fontSize + "px Impact";
-                ctx.fillText(this.text, this.gameObject.transform.position.x, this.gameObject.transform.position.y);
+                if (this.base > 0) {
+                    ctx.fillText(this.newText, this.gameObject.transform.position.x, this.gameObject.transform.position.y-15);
+                    ctx.fillText("(" + this.base + ")", this.gameObject.transform.position.x, this.gameObject.transform.position.y+15)
+                }
+                else {
+                    ctx.fillText(this.text, this.gameObject.transform.position.x, this.gameObject.transform.position.y);
+                }
             }
         }
         if (this.shape == "lines") {
             
             const cellSize = this.size.x;
-            const rows = Math.floor(canvas.height / cellSize)+2;
-            const columns = Math.floor(canvas.width / cellSize)+2;
+            const rows = Math.floor(canvas.height / cellSize)+1;
+            const columns = Math.floor(canvas.width / cellSize)+1;
 
                 ctx.beginPath();
                 ctx.strokeStyle = this.color;
@@ -203,7 +222,7 @@ class RigidBody2D extends Component {
                     component.size.x += Math.sqrt(this.otherCollider.gameObject.Sprite.text) * growthRate
                 }
             });
-            CreateNewCircle()
+            CreateNewCircle(Math.floor(Math.random() * Player1.Sprite.text*10+1))
             TextBox.Sprite.text = "Yum!"
         }
         else if (this.distance < this.gameObject.Collider.size.x && this.gameObject.Sprite.text < this.otherCollider.gameObject.Sprite.text) {
@@ -220,17 +239,17 @@ class RigidBody2D extends Component {
                     component.size.x = ((component.size.x - 70) / (Math.sqrt(2) * growthRate)) + 70
                 }
             });
-            if (Player1.Sprite.text < 50) {
+            if (Player1.Sprite.text < startingNum) {
                 Player1.Sprite.fontSize = 30
                 Player1.Sprite.size.x = 70
-                Player1.Sprite.text = 50;
+                Player1.Sprite.text = startingNum;
                 Player1.Components.forEach(component => {
                     if (component instanceof CircleCollider) {
                         component.size.x = Player1.Sprite.size.x;
                     }
                 });
             }
-            CreateNewCircle()
+            CreateNewCircle(Math.floor(Math.random() * Player1.Sprite.text*15+1))
             TextBox.Sprite.text = "Yuck Number Too Large!"
         }
     }
@@ -360,7 +379,7 @@ class MouseMovement extends Component {
     Update() {
         let angle = Math.atan2(mouseY - Player1.transform.position.y, mouseX - Player1.transform.position.x)
         let inCenter
-        if (Math.hypot(mouseX - Player1.transform.position.x, mouseY - Player1.transform.position.y) < Player1.Sprite.size.x / 3) {
+        if (Math.hypot(mouseX - Player1.transform.position.x, mouseY+30 - Player1.transform.position.y) < Player1.Sprite.size.x / 3) {
             inCenter = true
         }
         else {
@@ -381,7 +400,6 @@ class Clock extends Component {
     constructor({time}, gameObject) {
         super(gameObject)
         this.time = time+1
-        this.timeUp = false
         this.updateTimer()
     }
     updateTimer() {
@@ -390,16 +408,20 @@ class Clock extends Component {
             setTimeout(() => this.updateTimer(), 1000);;
             this.gameObject.Sprite.text = "TIME REMAINING: " + this.time
         }
-        else {
-            this.timeUp = true
-        }
+    }
+    endGame() {
+        gameOver = true;
     }
     Update() {
-        
+        if (this.time == 0) {
+            TextBox.Sprite.text = "GAME OVER!"
+            TextBox.Sprite.fontSize = "70"
+            setTimeout(() => this.endGame(), 10);
+        }
     }
 }
 
-function CreateNewCircle() {
+function CreateNewCircle(value) {
     let R = Math.random() * 175 + 50
     let G = Math.random() * 175 + 50
     let B = Math.random() * 175 + 30
@@ -408,8 +430,22 @@ function CreateNewCircle() {
     let momentum = (Math.random())
 
     Player2 = new GameObject({ name: "Dot" })
-    Player2.AddComponent(new RigidBody2D({ velocity: { x: 0, y: 0 }, gravity: 0, drag: 0.75, bounce: 0, direction: direction, momentum: momentum, variety: 0.01 }, Player2))
-    Player2.AddComponent(new Sprite({ size: { x: 50, y: 50 }, color: `rgb(${R}, ${G}, ${B})`, shape: "circle", text: Math.floor(Math.random() * Player1.Sprite.text * 7 + 1) }, Player2))
+    Player2.AddComponent(new RigidBody2D({ 
+        velocity: { x: 0, y: 0 }, 
+        gravity: 0, drag: 0.75, 
+        bounce: 0, 
+        direction: direction, 
+        momentum: momentum, 
+        variety: 0.01 }, 
+        Player2))
+
+    Player2.AddComponent(new Sprite({ 
+        size: { x: 60, y: 60 }, 
+        color: `rgb(${R}, ${G}, ${B})`, 
+        shape: "circle", 
+        text: value, 
+        base: Math.floor(Math.random()*9+2)}, 
+        Player2))
     // Player2.AddComponent(new KeyboardMovement({ up: 's', down: 'w', left: 'd', right: 'a', speed: 4 }, Player2))
     Player2.AddComponent(new CircleCollider({ size: { x: Player2.Sprite.size.x, y: Player2.Sprite.size.y } }, Player2))
 
@@ -443,35 +479,73 @@ function Update() {
 }
 
 Background = new GameObject({ name: "Background" })
-Background.AddComponent(new Sprite({ size: { x: 2000, y: 1000 }, color: "rgb(244,251,255)", shape: "rect" }, Background))
+Background.AddComponent(new Sprite({ 
+    size: { x: 2000, y: 1000 }, 
+    color: "rgb(244,251,255)", 
+    shape: "rect" }, 
+    Background))
 Background.transform.position = { x: 0, y: 0 }
 
+
 BackgroundLines = new GameObject({ name: "BackgroundLines" })
-BackgroundLines.AddComponent(new Sprite({size:{x:30, y:30}, color: "rgb(223,230,233)", shape: "lines"}, BackgroundLines))
+BackgroundLines.AddComponent(new Sprite(
+    {size:{x:30, y:30}, 
+    color: "rgb(223,230,233)", 
+    shape: "lines"}, 
+    BackgroundLines))
 BackgroundLines.AddComponent(new RigidBody2D({velocity: {x:0, y:0}, gravity:0, drag: 0.75, bounce:0}, BackgroundLines))
 BackgroundLines.transform.position = {x:0, y:0}
 
+
 Player1 = new GameObject({ name: "Circle_Red" })
 Player1.AddComponent(new RigidBody2D({ velocity: { x: 0, y: 0 }, gravity: 0, drag: 0.75, bounce: 0 }, Player1))
-Player1.AddComponent(new Sprite({ size: { x: 70, y: 70 }, color: "rgb(225, 10, 10)", shape: "circle", text: 50 }, Player1))
+Player1.AddComponent(new Sprite({ 
+    size: { x: 70, y: 70 }, 
+    color: "rgb(225, 10, 10)", 
+    shape: "circle", 
+    text: startingNum }, 
+    Player1))
 Player1.AddComponent(new CircleCollider({ size: { x: Player1.Sprite.size.x, y: Player1.Sprite.size.y } }, Player1))
-Player1.AddComponent(new MouseMovement({ speed: 1.6 }, Player1))
+Player1.AddComponent(new MouseMovement({ speed: 1.7 }, Player1))
+
 
 TextBox = new GameObject({ name: "TextBox" })
-TextBox.AddComponent(new Sprite({ size: { x: 0, y: 0 }, color: "white", shape: "circle", text: "Eat Smaller Circles to Get Bigger!", textColor: "black", fontSize: 50, globalAlpha: 0.75 }, TextBox))
+TextBox.AddComponent(new Sprite({ 
+    size: { x: 0, y: 0 }, 
+    color: "white", 
+    shape: "circle", 
+    text: "Eat Smaller Circles to Get Bigger!", 
+    textColor: "black", 
+    fontSize: 50, 
+    globalAlpha: 0.75 }, TextBox))
 TextBox.transform.position = { x: canvas.width / 2, y: canvas.height / 10 }
 
+
 Timer = new GameObject({name: "Timer"})
-Timer.AddComponent(new Sprite({size: {x:0, y:0}, color: "white", shape:"circle", text:"TIME REMAINING: 60", textColor: "black", fontSize: 60, globalAlpha:0.75}, Timer))
-Timer.AddComponent(new Clock({time: 60}, Timer))
+Timer.AddComponent(new Sprite(
+    {size: {x:0, y:0}, 
+    color: "white", 
+    shape:"circle", 
+    text:"TIME REMAINING: 60", 
+    textColor: "black", 
+    fontSize: 60, 
+    globalAlpha:0.75}, 
+    Timer))
+Timer.AddComponent(new Clock({time: 40}, Timer))
 Timer.transform.position = {x: canvas.width/2, y:canvas.height*9/10}
 
 
 GameObjects.push(Background);
 GameObjects.push(BackgroundLines)
 
-for (let i = 0; i < mapSize * mapSize * density; i++) {
-    CreateNewCircle()
+for (let i = 0; i < mapSize * mapSize * density*1.5/7; i++) {
+    CreateNewCircle(Math.floor(Math.random() * (Player1.Sprite.text-1))+1)
+}
+for (let i = 0; i < mapSize * mapSize * density*5/7; i++) {
+    CreateNewCircle(Math.floor(Math.random() * Player1.Sprite.text*10+1))
+}
+for (let i = 0; i < mapSize * mapSize * density/10; i++) {
+    CreateNewCircle(Math.floor(Math.random() * Player1.Sprite.text*40+1))
 }
 
 GameObjects.push(Player1);
