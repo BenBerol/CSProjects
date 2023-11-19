@@ -231,17 +231,17 @@ class RigidBody2D extends Component {
             index = Colliders.indexOf(this.otherCollider)
             Colliders.splice(index, 1)
             let oldSize = Player1.Sprite.size.x
-            Player1.Sprite.size.x = ((Player1.Sprite.size.x - 70) / (Math.sqrt(2) * growthRate)) + 70
+            Player1.Sprite.size.x = ((Player1.Sprite.size.x - 60) / (Math.sqrt(2) * growthRate)) + 60
             Player1.Sprite.fontSize *= Player1.Sprite.size.x / oldSize
             Player1.Sprite.text = Math.floor(Player1.Sprite.text / 2)
             Player1.Components.forEach(component => {
                 if (component instanceof CircleCollider) {
-                    component.size.x = ((component.size.x - 70) / (Math.sqrt(2) * growthRate)) + 70
+                    component.size.x = ((component.size.x - 60) / (Math.sqrt(2) * growthRate)) + 60
                 }
             });
             if (Player1.Sprite.text < startingNum) {
                 Player1.Sprite.fontSize = 30
-                Player1.Sprite.size.x = 70
+                Player1.Sprite.size.x = 60
                 Player1.Sprite.text = startingNum;
                 Player1.Components.forEach(component => {
                     if (component instanceof CircleCollider) {
@@ -500,7 +500,7 @@ BackgroundLines.transform.position = {x:0, y:0}
 Player1 = new GameObject({ name: "Circle_Red" })
 Player1.AddComponent(new RigidBody2D({ velocity: { x: 0, y: 0 }, gravity: 0, drag: 0.75, bounce: 0 }, Player1))
 Player1.AddComponent(new Sprite({ 
-    size: { x: 70, y: 70 }, 
+    size: { x: 60, y: 60 }, 
     color: "rgb(225, 10, 10)", 
     shape: "circle", 
     text: startingNum }, 
