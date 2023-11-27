@@ -223,7 +223,7 @@ class RigidBody2D extends Component {
                 }
             });
             CreateNewCircle(Math.floor(Math.random() * Player1.Sprite.text*10+1))
-            TextBox.Sprite.text = "Yum!"
+            TextBox.Sprite.text = "Yum! Number: " + this.otherCollider.gameObject.Sprite.text
         }
         else if (this.distance < this.gameObject.Collider.size.x && this.gameObject.Sprite.text < this.otherCollider.gameObject.Sprite.text) {
             let index = GameObjects.indexOf(this.otherCollider.gameObject)
@@ -250,7 +250,7 @@ class RigidBody2D extends Component {
                 });
             }
             CreateNewCircle(Math.floor(Math.random() * Player1.Sprite.text*15+1))
-            TextBox.Sprite.text = "Yuck Number Too Large!"
+            TextBox.Sprite.text = "Yuck Number Too Large! Number: " + this.otherCollider.gameObject.Sprite.text
         }
     }
 }
