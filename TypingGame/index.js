@@ -456,7 +456,7 @@ class ZombieKiller extends Component {
             wordArray.push([randomWord[i], false]);
         }
         console.log(wordArray)
-        setTimeout(() => CreateNewZombie(wordArray, this.zombieNumber+1), 3000/((zombiesKilled/8)+1))
+        setTimeout(() => CreateNewZombie(wordArray, this.zombieNumber+1), 3000/((zombiesKilled/12)+1))
     }
     Update() {
         if (Inputs.length == 1) {
@@ -482,7 +482,7 @@ function CreateNewZombie(word, index) {
 
     Zombie = new GameObject({ name: "Zombie" })
     Zombie.AddComponent(new RigidBody2D({ 
-        velocity: { x: (-zombiesKilled/8-2.5), y: 0 }, 
+        velocity: { x: (-zombiesKilled/12-2.5), y: 0 }, 
         drag: 1 }, 
         Zombie))
 
