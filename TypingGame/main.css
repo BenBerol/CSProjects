@@ -1,0 +1,32 @@
+body{
+    background-color: rgb(152, 191, 114);
+    height: 100%;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center; 
+}
+p{
+    font-size: 18px;
+    font-family:Georgia, 'Times New Roman', Times, serif;
+}
+h1 {
+    font-size: 50px;
+}
+h2 {
+    font-size: 30px;
+}
+form {
+    font-size: 28px;
+}
+button{
+    background-color: rgb(221, 51, 51);
+    text-align: center;
+    font-size: 25px;
+}
+
+#sliderContainer {
+    transform: scale(1.5);
+}
