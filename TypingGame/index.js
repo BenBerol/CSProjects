@@ -11,6 +11,8 @@ const density = 8
 const maxSpeed = 14
 const growthRate = 2
 const startingNum = 10
+let zombieSpeed = 1
+let speedIncrease = 0.6
 let Player1;
 let Background;
 let Zombie;
@@ -34,6 +36,8 @@ zombiePic.src = "./zombie.jpg"
 
 var playerPic = new Image()
 playerPic.src = "./player.jpeg"
+
+const audio = document.getElementById('myAudio');
 
 const wordsArray = [
     "Esto", "Usted", "Que", "Era", "Para",
@@ -84,7 +88,9 @@ class GameObject {
 
     Update() {
         for (let index = 0; index < this.Components.length; index++) {
-            this.Components[index].Update()
+            if (gameOver == false || this.Components[index] instanceof Sprite) {
+                this.Components[index].Update()
+            }
         }
     }
     OnSquareCollisionEnter(Collider) {
@@ -262,9 +268,7 @@ class RigidBody2D extends Component {
             else {
                 TextBox.Sprite.text = "GAME OVER! " + "Zombies Killed: " + (zombiesKilled) 
             }
-            setTimeout(function() {
-                gameOver = true;
-            }, 100);
+            gameOver = true;
         }
     }
     OnCircleCollisionEnter(Collider) {
@@ -450,13 +454,11 @@ class ZombieKiller extends Component {
         this.charNum = 0
         let randomWord = wordsArray[Math.floor(Math.random()*wordsArray.length)]
         let wordArray = []
-        console.log(randomWord)
         for (let i = 0; i < randomWord.length; i++) {
             // Create a subarray with the character and false
             wordArray.push([randomWord[i], false]);
         }
-        console.log(wordArray)
-        setTimeout(() => CreateNewZombie(wordArray, this.zombieNumber+1), 3000/((zombiesKilled/12)+1))
+        setTimeout(() => CreateNewZombie(wordArray, this.zombieNumber+1), 3000/((zombieSpeed)))
     }
     Update() {
         if (Inputs.length == 1) {
@@ -468,7 +470,14 @@ class ZombieKiller extends Component {
                         index = Colliders.indexOf(this.gameObject.SquareCollider)
                         Colliders.splice(index, 1)
                         zombiesKilled += 1
-                        TextBox.Sprite.text = "Zombies Killed: " + (zombiesKilled)
+                        if (zombiesKilled%10 == 0) {
+                            audio.play();
+                            zombieSpeed += speedIncrease;
+                        }
+                        else if (zombiesKilled == 1) {
+                            audio.play()
+                        }
+                        TextBox.Sprite.text = "Zombies Killed: " + (zombiesKilled) + "    Level: " + (Math.floor(zombiesKilled/10)+1)
                     }
                     this.gameObject.Sprite.text[this.charNum][1] = true
                     this.charNum += 1;
@@ -482,7 +491,7 @@ function CreateNewZombie(word, index) {
 
     Zombie = new GameObject({ name: "Zombie" })
     Zombie.AddComponent(new RigidBody2D({ 
-        velocity: { x: (-zombiesKilled/12-2.5), y: 0 }, 
+        velocity: { x: (-1-zombieSpeed), y: 0 }, 
         drag: 1 }, 
         Zombie))
 
@@ -517,7 +526,7 @@ function CreateNewZombie(word, index) {
 }
 
 function Update() {
-    if (gameOver == false) {
+
         window.requestAnimationFrame(Update);
 
         for (let index = 0; index < GameObjects.length; index++) {
@@ -526,7 +535,6 @@ function Update() {
 
         Inputs = []
         KeyUp = []
-    }
 }
 
 Background = new GameObject({ name: "Background" })
@@ -570,7 +578,7 @@ Player1.transform.position = {x: window.innerWidth/10, y: window.innerHeight/2 -
 GameObjects.push(Background);
 GameObjects.push(Player1)
 
-CreateNewZombie([["E", false], ["M", false], ["P", false], ["I", false], ["E", false], ["Z", false], ["A", false]], 0)
+CreateNewZombie([["E", false], ["m", false], ["p", false], ["i", false], ["e", false], ["z", false], ["a", false]], 0)
 
 GameObjects.push(TextBox)
 
