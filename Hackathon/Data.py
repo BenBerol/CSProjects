@@ -6,7 +6,7 @@ class Data:
         self.medianHousePrice = medianHousePrice
         self.interestRates = interestRates
         self.population = population
-        self.unemploymentRate = unemploymentRate\
+        self.unemploymentRate = unemploymentRate
         
     def to_dict(self):
         return {
