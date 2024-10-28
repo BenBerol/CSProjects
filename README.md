@@ -12,11 +12,13 @@ Each directory in the repository represents a separate project. Here's a brief o
 4. **EconomicMachineLearning**: A python based linear regression learning model designed to predict the housing affordability index given user submitted economic factors. Designed for Hack for the Homeless (2nd Place)
 5. **Mastermind** A java recreation of the game Mastermind that stores game results in json files providing data for the computer to use for different game difficulties
 6. **TypingGame** A typing game using a javascript canvas that experiments with importing jpeg and mp3 files into the game using a game engine
+7. **ExtendedEssay** The python code I used to model a version of Shor's algorithm for non-quantum computers and test the efficiency on a classical computer
+8. **CS_IA** My working folder as I begin developing my internal assessment project for HL IB Computer Science
 
 
 ## Installation and Setup
 
-Each project has its own set of dependencies and setup instructions, which can usually be found in the respective project directory.
+Each project has its own set of dependencies and setup instructions, please reach out to me using the email below if you have any questions about how to run any of these projects
 
 ## Contributing
 
