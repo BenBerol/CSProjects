@@ -14,6 +14,7 @@ Each directory in the repository represents a separate project. Here's a brief o
 6. **TypingGame** A typing game using a javascript canvas that experiments with importing jpeg and mp3 files into the game using a game engine
 7. **ExtendedEssay** The python code I used to model a version of Shor's algorithm for non-quantum computers and test the efficiency on a classical computer
 8. **CS_IA** My working folder as I begin developing my internal assessment project for HL IB Computer Science
+9. **Math_IA** My folder that holds all the python code I wrote and data I compiled for my HL IB Math Internal Assessment. This code computes a least squares regression to fit equations to a set of data points read from text files in the folder
 
 
 ## Installation and Setup
