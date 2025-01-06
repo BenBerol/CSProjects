@@ -33,7 +33,8 @@ class InputBox():
     - clear_text(index=0): Clears the text in the entry box at the given index.
     - set_font(font: tk.font.Font, index=0): Sets the font for
     the entry box at the given index.
-    - make_visible(): Makes the input box visible.
+    - make_visible(): Packs all contents of the input box.
+    - make_invisible(): Unpacks all contents of the input box.
     """
 
     def __init__(
@@ -113,6 +114,7 @@ class InputBox():
         else:
             self.entry_label.pack()
 
+        self.entry_textboxes = []
         for i in range(self.numEntries):
             self.add_entry(self.entry_frame, i)
 
