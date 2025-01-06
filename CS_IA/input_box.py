@@ -15,6 +15,7 @@ class InputBox():
     - entry_textboxes (list): A list to store the created entry boxes.
     - input_side (str): The side to pack the input boxes.
     - frame_side (str): The side to pack the frame.
+    - visible (bool): Whether the input box is visible.
 
 
     Methods:
@@ -32,12 +33,13 @@ class InputBox():
     - clear_text(index=0): Clears the text in the entry box at the given index.
     - set_font(font: tk.font.Font, index=0): Sets the font for
     the entry box at the given index.
+    - make_visible(): Makes the input box visible.
     """
 
     def __init__(
             self, tab: tk.Frame, label: str = None, font: font = None,
             numEntries: int = 1, entryTexts: list = None,
-            frame_side=None, input_side=None):
+            frame_side=None, input_side=None, visible: bool = True):
 
         self.tab = tab
         self.label = label
@@ -47,25 +49,27 @@ class InputBox():
         self.entryTexts = entryTexts if entryTexts is not None else []
         self.frame_side = frame_side
         self.input_side = input_side
+        self.visible = visible
         self.entry_textboxes = []
 
         self.create_input_box(self.label)
 
     def create_input_box(self, text=None):
-        entry_frame = tk.Frame(self.tab)
+        self.entry_frame = tk.Frame(self.tab)
         if (self.frame_side is not None):
-            entry_frame.pack(side=self.frame_side)
+            self.entry_frame.pack(side=self.frame_side)
         else:
-            entry_frame.pack()
+            self.entry_frame.pack()
 
-        entry_label = tk.Label(entry_frame, text=text, font=self.font)
-        if (self.input_side is not None):
-            entry_label.pack(side=self.input_side)
-        else:
-            entry_label.pack()
+        if (self.visible is True):
+            self.entry_label = tk.Label(self.entry_frame, text=text, font=self.font)
+            if (self.input_side is not None):
+                self.entry_label.pack(side=self.input_side)
+            else:
+                self.entry_label.pack()
 
-        for i in range(self.numEntries):
-            self.add_entry(entry_frame, i)
+            for i in range(self.numEntries):
+                self.add_entry(self.entry_frame, i)
 
     def add_entry(self, entry_frame, index=0):
         entry_textbox = tk.Entry(entry_frame, font=self.font, width=10)
@@ -100,6 +104,23 @@ class InputBox():
 
     def set_font(self, font: tk.font.Font, index=0):
         self.entry_textboxes[index].config(font=font)
+    
+    def make_visible(self):
+        self.visible = True
+        self.entry_label = tk.Label(self.entry_frame, text=self.label, font=self.font)
+        if (self.input_side is not None):
+            self.entry_label.pack(side=self.input_side)
+        else:
+            self.entry_label.pack()
+
+        for i in range(self.numEntries):
+            self.add_entry(self.entry_frame, i)
+
+    def make_invisible(self):
+        self.visible = False
+        self.entry_label.pack_forget()
+        for entry in self.entry_textboxes:
+            entry.pack_forget()
 
 
 class PointBox(InputBox):
@@ -128,7 +149,8 @@ class PointBox(InputBox):
     """
 
     def __init__(
-            self, tab: tk.Frame, point_number, font: font = None):
+            self, tab: tk.Frame, point_number, font: font = None, visible: bool = False):
+        self.point_number = point_number
         super().__init__(
             tab, f"Point {point_number}", font, 3,
-            ["Horizontal", "Vertical", "Angle"], tk.TOP, tk.LEFT)
+            ["Horizontal", "Vertical", "Angle"], tk.TOP, tk.LEFT, visible=visible)

@@ -59,6 +59,7 @@ class GUI:
             family="Monaco", size=16)
 
         self.robots = []
+        self.points = 1
         self.path_points_list = []
 
         # -----------------------------------------
@@ -117,15 +118,35 @@ class GUI:
         self.boundaries = ib.InputBox(
             self.path_points, label="Field Boundaries (m): ", font=self.input_font, 
             numEntries=2, entryTexts=["Width", "Height"], input_side=tk.LEFT, frame_side=tk.TOP)
-
+        
         point1 = ib.PointBox(
-            self.path_points, point_number="Point 1: ", font=self.input_font)
+            self.path_points, point_number="1", font=self.input_font, visible=True)
         self.path_points_list.append(point1)
+
+        for i in range(2, 16):
+            point = ib.PointBox(
+                self.path_points, point_number=i, font=self.input_font, visible=False)
+            self.path_points_list.append(point)
+
+        self.reset_points_button = tk.Button(
+            self.path_points, text="Reset Points", font=self.button_font,
+            command=self.reset_points)
+        self.reset_points_button.pack(side=tk.BOTTOM, pady=5)
+
+        self.submit_point_button = tk.Button(
+            self.path_points, text="Submit Path", font=self.button_font,
+            command=self.submit_points)
+        self.submit_point_button.pack(side=tk.BOTTOM, pady=5)
 
         self.add_point_button = tk.Button(
             self.path_points, text="Add Point", font=self.button_font,
             command=self.add_point)
-        self.add_point_button.pack(pady=20)
+        self.add_point_button.pack(side=tk.BOTTOM, pady=5)
+
+        self.error_label1 = tk.Label(
+            self.path_points, text="", font=self.button_font)
+
+        self.error_label1.pack(side=tk.BOTTOM, pady=5)
 
         # Create a frame for the boundary line
         boundary_frame = tk.Frame(self.tab2, width=2, bg="black")
@@ -169,10 +190,45 @@ class GUI:
             self.error_label.config(text="Please enter all fields correctly")
 
     def add_point(self):
-        point = ib.PointBox(self.path_points, point_number=f"Point {len(self.path_points_list)+1}", 
-                    font=self.input_font)
-        self.path_points_list.append(point)
-        print("Point added")
+        try:
+            self.path_points_list[self.points].make_visible()
+            self.points += 1
+            print("Point added")
+        except Exception as e:
+            print("Error: " + str(e))
+            self.error_label1.config(text="No more points can be added")
+
+    def submit_points(self):
+        try:
+            self.error_label1.config(text="")
+            boundary = self.boundaries.get_all_float()
+            points = []
+            for point in self.path_points_list:
+                if (point.visible):
+                    points.append(point.get_all_float())
+            print("Points submitted")
+            for float in boundary:
+                print(float)
+            for point in points:
+                print(point)
+
+        except Exception as e:
+            print("Error: " + str(e))
+            self.error_label1.config(text="Please enter all fields correctly")
+    
+    def reset_points(self):
+        try:
+            self.error_label1.config(text="")
+            for point in self.path_points_list:
+                if (point.visible and point.point_number != "1"):
+                    point.clear_text(0)
+                    point.clear_text(1)
+                    point.make_invisible()
+            self.points = 1
+            print("Points reset")
+        except Exception as e:
+            print("Error: " + str(e))
+            self.error_label1.config(text="Error resetting")
 
     def exit_fullscreen(self, event=None):
         self.root.attributes("-fullscreen", False)
