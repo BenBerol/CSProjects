@@ -25,6 +25,7 @@ class GUI:
         self.root = tk.Tk()
         self.root.title("My App")
         self.root.geometry("1200x800")
+        self.window_width = self.root.winfo_screenwidth()
 
         # Make the window full screen
         self.root.attributes("-fullscreen", True)
@@ -46,16 +47,19 @@ class GUI:
 
         # Create fonts
         self.title_font = font.Font(
-            family="Monaco", size=40, weight="bold", underline=1
-        )
+            family="Monaco", size=40, weight="bold", underline=1)
+
         self.body_font = font.Font(
-            family="Monaco", size=25
-        )
+            family="Monaco", size=25)
+
         self.button_font = font.Font(
-            family="Monaco", size=20
-        )
+            family="Monaco", size=20)
+
+        self.input_font = font.Font(    
+            family="Monaco", size=16)
 
         self.robots = []
+        self.path_points_list = []
 
         # -----------------------------------------
         # Tab 1 Components
@@ -66,10 +70,11 @@ class GUI:
 
         # Robot info input boxes
         self.team_number = ib.InputBox(
-            self.tab1, label="Enter your team number: ", font=self.body_font)
+            self.tab1, label="Enter your team number: ", 
+            font=self.body_font, input_side=tk.LEFT)
         self.robot_weight = ib.InputBox(
             self.tab1, label="Enter your robot weight (lbs): ",
-            font=self.body_font)
+            font=self.body_font, input_side=tk.LEFT)
 
         tk.Label(
             self.tab1, text="Wheel Locations (m from robot center)",
@@ -78,32 +83,59 @@ class GUI:
         # Wheel location input boxes
         self.front_left = ib.InputBox(
             self.tab1, label="Front Left: ", font=self.body_font,
-            numEntries=2, entryTexts=["Horizontal", "Vertical"])
+            numEntries=2, entryTexts=["Horizontal", "Vertical"], input_side=tk.LEFT)
         self.front_right = ib.InputBox(
             self.tab1, label="Front Right: ", font=self.body_font,
-            numEntries=2, entryTexts=["Horizontal", "Vertical"])
+            numEntries=2, entryTexts=["Horizontal", "Vertical"], input_side=tk.LEFT)
         self.back_left = ib.InputBox(
             self.tab1, label="Back Left: ", font=self.body_font,
-            numEntries=2, entryTexts=["Horizontal", "Vertical"])
+            numEntries=2, entryTexts=["Horizontal", "Vertical"], input_side=tk.LEFT)
         self.back_right = ib.InputBox(
             self.tab1, label="Back Right: ", font=self.body_font,
-            numEntries=2, entryTexts=["Horizontal", "Vertical"])
+            numEntries=2, entryTexts=["Horizontal", "Vertical"], input_side=tk.LEFT)
 
         self.submit_button = tk.Button(
             self.tab1, text="Submit Info", command=self.submit_robot,
-            font=self.button_font
-        )
+            font=self.button_font)
+
         self.submit_button.pack(pady=20)
 
         self.error_label = tk.Label(
-            self.tab1, text="", font=self.body_font
-        )
+            self.tab1, text="", font=self.body_font)
+
         self.error_label.pack()
 
         # -----------------------------------------
         # Tab 2 Components
         tk.Label(
-            self.tab2, text="This is Tab 2").pack(pady=20)
+            self.tab2, text="Design Robot Path",
+            font=self.title_font).pack(pady=20)
+
+        self.path_points = tk.Frame(self.tab2, width=float(self.window_width)/3-1, height=800)
+        self.path_points.pack(side=tk.LEFT, fill=tk.Y)
+
+        self.boundaries = ib.InputBox(
+            self.path_points, label="Field Boundaries (m): ", font=self.input_font, 
+            numEntries=2, entryTexts=["Width", "Height"], input_side=tk.LEFT, frame_side=tk.TOP)
+
+        point1 = ib.PointBox(
+            self.path_points, point_number="Point 1: ", font=self.input_font)
+        self.path_points_list.append(point1)
+
+        self.add_point_button = tk.Button(
+            self.path_points, text="Add Point", font=self.button_font,
+            command=self.add_point)
+        self.add_point_button.pack(pady=20)
+
+        # Create a frame for the boundary line
+        boundary_frame = tk.Frame(self.tab2, width=2, bg="black")
+        boundary_frame.pack(side=tk.LEFT, fill=tk.Y)
+
+        self.preview_page = tk.Frame(self.tab2, width=float(self.window_width)*2/3-1, height=800)
+        self.preview_page.pack(side=tk.LEFT)
+
+
+        self.path_points = tk.Frame(self.tab2, width=1198, height=800)
 
         self.root.mainloop()
         print("GUI initialized")
@@ -134,7 +166,13 @@ class GUI:
 
         except Exception as e:
             print("Error: " + str(e))
-            self.error_label.config(text="Please enter all field correctly")
+            self.error_label.config(text="Please enter all fields correctly")
+
+    def add_point(self):
+        point = ib.PointBox(self.path_points, point_number=f"Point {len(self.path_points_list)+1}", 
+                    font=self.input_font)
+        self.path_points_list.append(point)
+        print("Point added")
 
     def exit_fullscreen(self, event=None):
         self.root.attributes("-fullscreen", False)
