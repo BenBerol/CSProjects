@@ -103,6 +103,10 @@ class InputBox():
     def clear_text(self, index=0):
         self.entry_textboxes[index].delete(0, tk.END)
 
+    def clear_all_text(self):
+        for entry in self.entry_textboxes:
+            entry.delete(0, tk.END)
+
     def set_font(self, font: tk.font.Font, index=0):
         self.entry_textboxes[index].config(font=font)
     

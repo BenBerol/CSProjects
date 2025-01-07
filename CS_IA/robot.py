@@ -9,6 +9,8 @@ class Robot():
     Parameters:
     - team_number (int): The team number of the robot.
     - robot_weight (float): The weight of the robot.
+    - robot_dimensions (list): The dimensions of the robot.
+    - robot_name (str): The name of the robot.
     - wheels (tuple of wheel objects): An immutable list of
     wheel objects in the robot
 
@@ -20,10 +22,12 @@ class Robot():
     an attribute is modified.
     """
 
-    def __init__(self, team_number: int, robot_weight: int, wheels: wh.Wheel):
+    def __init__(self, team_number: int, robot_weight: int, robot_dimensions: list, robot_name: str, wheels: wh.Wheel):
 
         self._team_number = team_number
         self._robot_weight = robot_weight
+        self._robot_dimensions = robot_dimensions
+        self._robot_name = robot_name
         self._wheels = wheels
 
     @property
@@ -33,6 +37,14 @@ class Robot():
     @property
     def get_robot_weight(self):
         return self._robot_weight
+
+    @property
+    def get_robot_dimensions(self):
+        return self._robot_dimensions
+
+    @property
+    def get_robot_name(self):
+        return self._robot_name
 
     @property
     def get_wheels(self):
