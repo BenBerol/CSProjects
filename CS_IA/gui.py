@@ -7,6 +7,7 @@ import input_box as ib
 import wheel as wh
 import robot as rb
 import field as fd
+import path_points as pp
 
 
 class GUI:
@@ -66,15 +67,15 @@ class GUI:
             family="Monaco", size=16)
 
         self.robots = [rb.Robot(
-            team_number=0,
-            robot_weight=0.0,
-            robot_dimensions=(0.0, 0.0),
+            team_number=1418,
+            robot_weight=100,
+            robot_dimensions=(1.0, 1.0),
             robot_name="Default Robot",
             wheels=(
-                wh.Wheel(0.0, 0.0),
-                wh.Wheel(0.0, 0.0),
-                wh.Wheel(0.0, 0.0),
-                wh.Wheel(0.0, 0.0)
+                wh.Wheel(0.5, 0.5),
+                wh.Wheel(0.5, 0.5),
+                wh.Wheel(0.5, 0.5),
+                wh.Wheel(0.5, 0.5)
             )
         )]
         self.path_points_list = []
@@ -149,6 +150,7 @@ class GUI:
 
         # -----------------------------------------
         # Tab 2 Components
+
         tk.Label(
             self.tab2, text="Design Robot Path",
             font=self.title_font).pack(pady=20)
@@ -203,6 +205,9 @@ class GUI:
         self.preview_page.pack(side=tk.LEFT)
 
         self.field = fd.Field(self.preview_page)
+
+        # -----------------------------------------
+        # Tab 3 Components
 
         self.root.mainloop()
         print("GUI initialized")
@@ -265,11 +270,15 @@ class GUI:
             self.boundary = self.boundaries.get_all_float()
             self.field.clear_canvas()
             self.field.draw_grid(int(self.boundary[0]), int(self.boundary[1]))
+    
         except Exception as e:
             print("Error: " + str(e))
             self.error_label1.config(text="Please enter all fields correctly")
+        
+        if (self.robot_dropdown.get() != "Select a robot"):
+            self.submit_points("")
 
-    def submit_points(self):
+    def submit_points(self, errorMessage = "Please enter all fields correctly"):
         try:
             if (self.robot_dropdown.get() == "Select a robot"):
                 self.error_label1.config(text="Please select a robot")
@@ -278,17 +287,20 @@ class GUI:
                 self.error_label1.config(text="Please enter boundaries")
                 return
             self.field.set_robot(self.robots[self.robot_dropdown.current()])
-            self.error_label1.config(text="")
+
             points = []
             for point in self.path_points_list:
                 if (point.visible):
-                    points.append(point.get_all_float())
-            print("Points submitted")
-            print(points)
+                    points.append(pp.PathPoint(point.get_float(0), point.get_float(1), point.get_float(2)))
+
+            self.field.draw_robot(points[0].get_x(), points[0].get_y(), points[0].get_angle())
+            self.field.draw_path(points)
+
+            self.error_label1.config(text="")
 
         except Exception as e:
             print("Error: " + str(e))
-            self.error_label1.config(text="Please enter all fields correctly")
+            self.error_label1.config(text=errorMessage)
     
     def reset_points(self):
         try:
@@ -302,7 +314,9 @@ class GUI:
             self.path_points_list[0].make_visible()
 
             self.points = 1
-            print("Points reset")
+
+            self.field.clear_robot()
+            self.field.clear_lines()
         except Exception as e:
             print("Error: " + str(e))
             self.error_label1.config(text="Error resetting")

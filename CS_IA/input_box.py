@@ -52,6 +52,7 @@ class InputBox():
         self.input_side = input_side
         self.visible = visible
         self.entry_textboxes = []
+        self.entry_frame = None
 
         self.create_input_box(self.label)
 
@@ -131,27 +132,10 @@ class InputBox():
 
 class PointBox(InputBox):
     """
-    A class representing a point input box in a tkinter GUI.
+    A child class of Input Box designed to take in path points
 
-    Parameters:
-    - tab (tk.Frame): The parent frame where the point box will be placed.
-    - point_number (str): The label text for the point box.
-    - font (tk.font.Font): The font for the point box.
-    - frame_side (str): The side to pack the frame.
-    - input_side (str): The side to pack the input boxes.
-
-    Methods:
-    - create_input_box(text=None): Creates the point box
-    with the given label text.
-    - add_entry(entry_frame, index=0): Adds an entry box to the point box.
-    - get_text(index=0): Returns the text in the entry box at the given index.
-    - get_all_text(): Returns a list of all the text in the entry boxes.
-    - set_text(text: str, index=0): Sets the text in the entry box
-    at the given index.
-    - clear_text(index=0): Clears the text in the entry box at
-    the given index.
-    - set_font(font: tk.font.Font, index=0): Sets the font for the entry
-    box at the given index.
+    New Parameters:
+    - point_number (int): The number of the point box
     """
 
     def __init__(
@@ -159,4 +143,4 @@ class PointBox(InputBox):
         self.point_number = point_number
         super().__init__(
             tab, f"Point {point_number}", font, 3,
-            ["Horizontal", "Vertical", "Angle"], tk.TOP, tk.LEFT, visible=visible)
+            ["Horiz. (m)", "Vert. (m)", "Degrees"], tk.TOP, tk.LEFT, visible=visible)
