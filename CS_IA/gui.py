@@ -1,13 +1,13 @@
 import tkinter as tk
 from tkinter import ttk
 from tkinter import font
-import time
 
 import input_box as ib
 import wheel as wh
 import robot as rb
 import field as fd
 import path_points as pp
+import wheel_data as wd
 
 
 class GUI:
@@ -72,10 +72,10 @@ class GUI:
             robot_dimensions=(1.0, 1.0),
             robot_name="Default Robot",
             wheels=(
+                wh.Wheel(0.5, -0.5),
                 wh.Wheel(0.5, 0.5),
-                wh.Wheel(0.5, 0.5),
-                wh.Wheel(0.5, 0.5),
-                wh.Wheel(0.5, 0.5)
+                wh.Wheel(-0.5, -0.5),
+                wh.Wheel(-0.5, 0.5)
             )
         )]
         self.path_points_list = []
@@ -112,16 +112,16 @@ class GUI:
         # Wheel location input boxes
         self.front_left = ib.InputBox(
             self.tab1, label="Front Left: ", font=self.body_font,
-            numEntries=2, entryTexts=["Horizontal", "Vertical"], input_side=tk.LEFT)
+            numEntries=2, entryTexts=["Forward", "Lateral"], input_side=tk.LEFT)
         self.front_right = ib.InputBox(
             self.tab1, label="Front Right: ", font=self.body_font,
-            numEntries=2, entryTexts=["Horizontal", "Vertical"], input_side=tk.LEFT)
+            numEntries=2, entryTexts=["Forward", "Lateral"], input_side=tk.LEFT)
         self.back_left = ib.InputBox(
             self.tab1, label="Back Left: ", font=self.body_font,
-            numEntries=2, entryTexts=["Horizontal", "Vertical"], input_side=tk.LEFT)
+            numEntries=2, entryTexts=["Forward", "Lateral"], input_side=tk.LEFT)
         self.back_right = ib.InputBox(
             self.tab1, label="Back Right: ", font=self.body_font,
-            numEntries=2, entryTexts=["Horizontal", "Vertical"], input_side=tk.LEFT)
+            numEntries=2, entryTexts=["Forward", "Lateral"], input_side=tk.LEFT)
 
         # Button to submit robot info
         self.submit_button = tk.Button(
@@ -151,11 +151,25 @@ class GUI:
         # -----------------------------------------
         # Tab 2 Components
 
-        tk.Label(
-            self.tab2, text="Design Robot Path",
-            font=self.title_font).pack(pady=20)
+        self.title_frame = tk.Frame(self.tab2)
+        self.title_frame.pack(side=tk.TOP)
 
-        #Widgets for the path points on the left side of the tab
+        self.previewButton = tk.Button(
+            self.title_frame, text="Run Preview", font=self.button_font,
+            command=self.run_preview
+        )
+        self.previewButton.pack(pady=20, side=tk.RIGHT, padx=30)
+
+        tk.Label(
+            self.title_frame, text="Design Robot Path",
+            font=self.title_font).pack(pady=20, side=tk.RIGHT)
+        
+        self.speed_slider = tk.Scale(
+                self.title_frame, from_=1, to=20, orient=tk.HORIZONTAL,
+                label="Time To Complete Path (s)", font=self.button_font, length=350,
+                resolution=0.5)
+        self.speed_slider.pack(pady=20, side=tk.RIGHT, padx=20)
+
         self.path_points = tk.Frame(self.tab2, width=float(self.window_width)/3-1, height=800)
         self.path_points.pack(side=tk.LEFT, fill=tk.Y)
 
@@ -209,8 +223,89 @@ class GUI:
         # -----------------------------------------
         # Tab 3 Components
 
+        tk.Label(
+            self.tab3, text="Wheel Data",
+            font=self.title_font).pack(pady=20)
+
+        self.table_frame = tk.Frame(self.tab3)
+        self.table_frame.pack(fill=tk.BOTH, expand=True)
+
+        self.tree = ttk.Treeview(self.table_frame, columns=("Column1", "Column2", "Column3"), show='headings')
+        style = ttk.Style()
+        style.configure("Treeview.Heading", font=("Monaco", 25)) 
+        style.configure("Treeview", font=("Monaco", 20), padding=10, rowheight=40)
+
+        self.tree.heading("Column1", text="Time (seconds)")
+        self.tree.heading("Column2", text="Angle (Degrees)")
+        self.tree.heading("Column3", text="Wheel Speed (m/s)")
+        self.tree.pack(fill=tk.BOTH, expand=True)
+
+        self.input_frame = tk.Frame(self.tab3)
+        self.input_frame.pack(side=tk.TOP, pady=20)
+
+        self.populate_button = tk.Button(self.input_frame, text="Populate Table", command=self.populate_table, font=self.button_font)
+        self.populate_button.pack(side=tk.LEFT, padx=10)
+
+        self.wheel_var = tk.StringVar()
+        self.wheel_var.set("Select a wheel")
+        self.wheel_dropdown = ttk.Combobox(
+            self.input_frame, textvariable=self.wheel_var, font=self.button_font, state="readonly")
+        self.wheel_dropdown['values'] = ["Front Left", "Front Right", "Back Left", "Back Right"]
+        self.wheel_dropdown.pack(side=tk.LEFT, padx=10)
+
+        self.error_label2 = tk.Label(
+            self.input_frame, text="", font=self.button_font)
+        self.error_label2.pack(side=tk.RIGHT, padx=10)
+
+        self.button_frame = tk.Frame(self.tab3)
+        self.button_frame.pack(side=tk.BOTTOM, pady=20)
+
+        self.export_button = tk.Button(self.button_frame, text="Export Wheel Data", command=self.export_wheel_data, font=self.button_font)
+        self.export_button.pack(side=tk.LEFT, padx=10)
+
         self.root.mainloop()
         print("GUI initialized")
+
+    def export_wheel_data(self):
+        # Placeholder function for exporting wheel data
+        print("Exporting wheel data...")
+
+    def populate_table(self):
+        try:
+            if (self.robot_dropdown.get() == "Select a robot"):
+                self.error_label2.config(text="Please select a robot")
+                return
+
+            robot = self.robots[self.robot_dropdown.current()]
+
+            points = []
+            visible_points = 0
+            for point in self.path_points_list:
+                if (point.visible):
+                    points.append(pp.PathPoint(point.get_float(0), point.get_float(1), point.get_float(2)))
+                    visible_points += 1
+            if (visible_points < 2):
+                self.error_label1.config(text="Please enter 2 or more points")
+                return
+
+            if (self.wheel_dropdown.get() == "Select a wheel"):
+                self.error_label2.config(text="Please select a wheel")
+                return
+            else:
+                selected_wheel = self.wheel_dropdown.current()
+                self.error_label2.config(text="")
+
+            robot.compute_data(points, self.speed_slider.get())
+
+            for row in self.tree.get_children():
+                self.tree.delete(row)
+
+            for wheel_data in robot._wheels[selected_wheel].data:
+                self.tree.insert("", "end", values=(wheel_data._timestamp, wheel_data._angle, wheel_data._speed))
+
+        except Exception as e:
+            self.error_label2.config(text="Error populating table")
+            print("Error: " + str(e))
 
     def submit_robot(self):
         try:
@@ -245,9 +340,6 @@ class GUI:
             self.back_left.clear_all_text()
             self.back_right.clear_all_text()
 
-            print("Robot added")
-            print(robot.get_robot_dimensions)
-
             self.robot_dropdown['values'] = [robot._robot_name for robot in self.robots]
 
 
@@ -259,7 +351,6 @@ class GUI:
         try:
             self.path_points_list[self.points].make_visible()
             self.points += 1
-            print("Point added")
         except Exception as e:
             print("Error: " + str(e))
             self.error_label1.config(text="No more points can be added")
@@ -293,7 +384,7 @@ class GUI:
                 if (point.visible):
                     points.append(pp.PathPoint(point.get_float(0), point.get_float(1), point.get_float(2)))
 
-            self.field.draw_robot(points[0].get_x(), points[0].get_y(), points[0].get_angle())
+            self.field.draw_robot(points[0].get_x(), points[0].get_y(), points[0].get_angle(), False)
             self.field.draw_path(points)
 
             self.error_label1.config(text="")
@@ -317,6 +408,14 @@ class GUI:
 
             self.field.clear_robot()
             self.field.clear_lines()
+            self.field.clear_previews()
         except Exception as e:
             print("Error: " + str(e))
             self.error_label1.config(text="Error resetting")
+   
+    def run_preview(self):
+        try:
+            self.field.run_preview(self.speed_slider.get())
+        except Exception as e:
+            print("Error: " + str(e))
+            self.error_label1.config(text="Error running preview")

@@ -1,5 +1,6 @@
 import wheel as wh
-
+import math
+import numpy as np
 
 class Robot():
 
@@ -15,6 +16,8 @@ class Robot():
     wheel objects in the robot
 
     Methods:
+    - compute_data(path_points: list, time: float): Computes the data for the wheels
+    using the path points and time.
     - get_team_number(): Returns the team number of the robot.
     - get_robot_weight(): Returns the weight of the robot.
     - get_wheels(): Returns the list of wheel locations in the robot.
@@ -22,13 +25,33 @@ class Robot():
     an attribute is modified.
     """
 
-    def __init__(self, team_number: int, robot_weight: int, robot_dimensions: list, robot_name: str, wheels: wh.Wheel):
+    def __init__(self, team_number: int, robot_weight: int, robot_dimensions: list, robot_name: str, wheels: list[wh.Wheel]):
 
         self._team_number = team_number
         self._robot_weight = robot_weight
         self._robot_dimensions = robot_dimensions
         self._robot_name = robot_name
         self._wheels = wheels
+
+    def compute_data(self, path_points: list, time: float):
+        for wheel in self._wheels:
+            wheel.data = []
+        path_length = 0
+        segment_lengths = []
+        for i in range(len(path_points)-1):
+            segment_lengths.append(math.sqrt((path_points[i+1].get_x()-path_points[i].get_x())**2+(path_points[i+1].get_y()-path_points[i].get_y())**2))
+            path_length += segment_lengths[i]
+        for i in range(len(path_points)-1):
+            delta_x = path_points[i+1].get_x()-path_points[i].get_x()
+            delta_y = path_points[i+1].get_y()-path_points[i].get_y()
+            delta_theta = path_points[i+1].get_angle()-path_points[i].get_angle()
+            delta_theta = np.radians(delta_theta)
+            time_segment = segment_lengths[i]/path_length*time
+            x_vel = delta_x/time_segment
+            y_vel = delta_y/time_segment
+            angular_vel = delta_theta/time_segment
+            for wheel in self._wheels:
+                wheel.calculate_data(np.array([x_vel, y_vel]), angular_vel, time_segment)
 
     @property
     def get_team_number(self):
