@@ -8,6 +8,7 @@ import robot as rb
 import field as fd
 import path_points as pp
 import wheel_data as wd
+import json
 
 
 class GUI:
@@ -44,11 +45,13 @@ class GUI:
         self.tab1 = tk.Frame(self.notebook)
         self.tab2 = tk.Frame(self.notebook)
         self.tab3 = tk.Frame(self.notebook)
+        self.tab4 = tk.Frame(self.notebook)
 
         # Add tabs to the notebook
         self.notebook.add(self.tab1, text='Tab 1')
         self.notebook.add(self.tab2, text='Tab 2')
         self.notebook.add(self.tab3, text='Tab 3')
+        self.notebook.add(self.tab4, text='Tab 4')
 
         # Create fonts
         self.title_font = font.Font(
@@ -80,7 +83,8 @@ class GUI:
         )]
         self.path_points_list = []
         self.boundary = []
-        self.points = 1
+        self.points_index = 1
+        self.points = []
 
 
         # -----------------------------------------
@@ -263,12 +267,135 @@ class GUI:
         self.export_button = tk.Button(self.button_frame, text="Export Wheel Data", command=self.export_wheel_data, font=self.button_font)
         self.export_button.pack(side=tk.LEFT, padx=10)
 
+        # -----------------------------------------
+        # Tab 4 Components
+
+        tk.Label(
+            self.tab4, text="Path Data",
+            font=self.title_font).pack(pady=20)
+
+        self.table_frame1 = tk.Frame(self.tab4)
+        self.table_frame1.pack(fill=tk.BOTH, expand=True)
+
+        self.tree1 = ttk.Treeview(self.table_frame1, columns=("Column1", "Column2", "Column3"), show='headings')
+        style = ttk.Style()
+        style.configure("Treeview.Heading", font=("Monaco", 25)) 
+        style.configure("Treeview", font=("Monaco", 20), padding=10, rowheight=40)
+
+        self.tree1.heading("Column1", text="Horizontal (m)")
+        self.tree1.heading("Column2", text="Vertical (m)")
+        self.tree1.heading("Column3", text="Angle (Degrees)")
+        self.tree1.pack(fill=tk.BOTH, expand=True)
+
+        self.input_frame1 = tk.Frame(self.tab4)
+        self.input_frame1.pack(side=tk.TOP, pady=20)
+
+        self.populate_button1 = tk.Button(self.input_frame1, text="Populate Table", command=self.populate_path, font=self.button_font)
+        self.populate_button1.pack(side=tk.LEFT)
+
+        self.error_label3 = tk.Label(
+            self.input_frame1, text="", font=self.button_font)
+        self.error_label3.pack(side=tk.RIGHT)
+
+        self.button_frame1 = tk.Frame(self.tab4)
+        self.button_frame1.pack(side=tk.BOTTOM, pady=20)
+
+        self.export_button1 = tk.Button(self.button_frame1, text="Export Path Data", command=self.export_path_data, font=self.button_font)
+        self.export_button1.pack(side=tk.LEFT)
+
+        self.import_button = tk.Button(self.button_frame1, text="Import Path Data", command=self.import_path_data, font=self.button_font)
+        self.import_button.pack(side=tk.LEFT)
+
         self.root.mainloop()
         print("GUI initialized")
 
+    def import_path_data(self):
+        try:
+            self.reset_points()
+            with open("path_data.json", "r") as json_file:
+                data = json.load(json_file)
+                self.points = []
+                for point in data:
+                    self.points.append(pp.PathPoint(point["x"], point["y"], point["angle"]))
+                self.populate_path()
+                self.points_index = 0
+                for point in self.points:
+                    if not self.path_points_list[self.points_index].visible:
+                        self.path_points_list[self.points_index].make_visible()
+                    self.path_points_list[self.points_index].set_text(point.get_x(), 0)
+                    self.path_points_list[self.points_index].set_text(point.get_y(), 1)
+                    self.path_points_list[self.points_index].set_text(point.get_angle(), 2)
+                    self.points_index += 1
+
+        except Exception as e:
+            self.error_label3.config(text="Error importing data")
+            print("Error: " + str(e))
+
+    def populate_path(self):
+        self.submit_points("")
+
+        for row in self.tree1.get_children():
+            self.tree1.delete(row)
+
+        for point in self.points:
+            self.tree1.insert("", "end", values=(point.get_x(), point.get_y(), point.get_angle()))
+
+    def export_path_data(self):
+        try:
+            if (len(self.points) == 0):
+                self.error_label3.config(text="No data to export")
+                return
+            
+            path_data = []
+            for point in self.points:
+                path_data.append({
+                    "x": point.get_x(),
+                    "y": point.get_y(),
+                    "angle": point.get_angle()
+                })
+            
+            with open("path_data.json", "w") as json_file:
+                json.dump(path_data, json_file, indent=4)
+
+        except Exception as e:
+            print("Error: " + str(e))   
+            self.error_label3.config(text="Error exporting data")
+
     def export_wheel_data(self):
-        # Placeholder function for exporting wheel data
-        print("Exporting wheel data...")
+        try:
+            if self.robot_dropdown.get() == "Select a robot":
+                self.error_label2.config(text="Please select a robot")
+                return
+            
+            robot = self.robots[self.robot_dropdown.current()]
+
+            if robot._wheels[0].data == []:
+                self.error_label2.config(text="No data to export")
+                return
+
+            robot_data = []
+            wheel_index = 0
+            for wheel in robot._wheels:
+                wheel_data_list = []
+                for wheel_data in wheel.data:
+                    wheel_data_list.append({
+                        "timestamp": wheel_data._timestamp,
+                        "angle": wheel_data._angle,
+                        "speed": wheel_data._speed
+                    })
+                robot_data.append({
+                    f"Wheel {wheel_index+1}": wheel_data_list
+                    })
+                wheel_index += 1
+
+            with open("wheel_data.json", "w") as json_file:
+                json.dump(robot_data, json_file, indent=4)
+
+            self.error_label2.config(text="Data exported successfully")
+
+        except Exception as e:
+            self.error_label2.config(text="Error exporting data")
+            print("Error: " + str(e))
 
     def populate_table(self):
         try:
@@ -278,11 +405,9 @@ class GUI:
 
             robot = self.robots[self.robot_dropdown.current()]
 
-            points = []
             visible_points = 0
-            for point in self.path_points_list:
-                if (point.visible):
-                    points.append(pp.PathPoint(point.get_float(0), point.get_float(1), point.get_float(2)))
+            for input in self.path_points_list:
+                if (input.visible):
                     visible_points += 1
             if (visible_points < 2):
                 self.error_label1.config(text="Please enter 2 or more points")
@@ -295,7 +420,7 @@ class GUI:
                 selected_wheel = self.wheel_dropdown.current()
                 self.error_label2.config(text="")
 
-            robot.compute_data(points, self.speed_slider.get())
+            robot.compute_data(self.points, self.speed_slider.get())
 
             for row in self.tree.get_children():
                 self.tree.delete(row)
@@ -349,8 +474,8 @@ class GUI:
 
     def add_point(self):
         try:
-            self.path_points_list[self.points].make_visible()
-            self.points += 1
+            self.path_points_list[self.points_index].make_visible()
+            self.points_index += 1
         except Exception as e:
             print("Error: " + str(e))
             self.error_label1.config(text="No more points can be added")
@@ -379,13 +504,13 @@ class GUI:
                 return
             self.field.set_robot(self.robots[self.robot_dropdown.current()])
 
-            points = []
+            self.points = []
             for point in self.path_points_list:
                 if (point.visible):
-                    points.append(pp.PathPoint(point.get_float(0), point.get_float(1), point.get_float(2)))
+                    self.points.append(pp.PathPoint(point.get_float(0), point.get_float(1), point.get_float(2)))
 
-            self.field.draw_robot(points[0].get_x(), points[0].get_y(), points[0].get_angle(), False)
-            self.field.draw_path(points)
+            self.field.draw_robot(self.points[0].get_x(), self.points[0].get_y(), self.points[0].get_angle(), False)
+            self.field.draw_path(self.points)
 
             self.error_label1.config(text="")
 
@@ -404,7 +529,7 @@ class GUI:
                     point.make_invisible()
             self.path_points_list[0].make_visible()
 
-            self.points = 1
+            self.points_index = 1
 
             self.field.clear_robot()
             self.field.clear_lines()
