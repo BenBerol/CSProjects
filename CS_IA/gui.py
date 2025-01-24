@@ -267,6 +267,16 @@ class GUI:
         self.export_button = tk.Button(self.button_frame, text="Export Wheel Data", command=self.export_wheel_data, font=self.button_font)
         self.export_button.pack(side=tk.LEFT, padx=10)
 
+        self.sort_var = tk.StringVar()
+        self.sort_var.set("Sort by what?")
+        self.sort_dropdown = ttk.Combobox(
+            self.button_frame, textvariable=self.sort_var, font=self.button_font, state="readonly")
+        self.sort_dropdown['values'] = ["Time", "Angle", "Wheel Speed"]
+        self.sort_dropdown.pack(side=tk.LEFT, padx=10)
+
+        self.sort_data_button = tk.Button(self.button_frame, text="Sort Data", command=self.sort_data, font=self.button_font)
+        self.sort_data_button.pack(side=tk.LEFT, padx=10)
+
         # -----------------------------------------
         # Tab 4 Components
 
@@ -308,6 +318,67 @@ class GUI:
 
         self.root.mainloop()
         print("GUI initialized")
+
+    def sort_data(self):
+        try:
+            if self.robot_dropdown.get() == "Select a robot":
+                self.error_label2.config(text="Please select a robot")
+                return
+
+            robot = self.robots[self.robot_dropdown.current()]
+
+            if robot._wheels[0].data == []:
+                self.error_label2.config(text="No data to sort")
+                return
+
+            if self.sort_var.get() == "Sort by what?":
+                self.error_label2.config(text="Please select a sort option")
+                return
+
+            wheel_index = self.wheel_dropdown.current()
+            sort_option = self.sort_var.get()
+
+            unsorted_data = []
+            index = 0
+            if (sort_option == "Time"):
+                for data in robot._wheels[wheel_index].data:
+                    unsorted_data.append([data._timestamp, index])
+                    index += 1
+            if (sort_option == "Angle"):
+                for data in robot._wheels[wheel_index].data:
+                    unsorted_data.append([data._angle, index])
+                    index += 1
+            if (sort_option == "Wheel Speed"):
+                for data in robot._wheels[wheel_index].data:
+                    unsorted_data.append([data._speed, index])
+                    index += 1
+            
+            for i in range(1, len(unsorted_data)):
+                key = unsorted_data[i]
+
+                j = i-1
+                while j >= 0 and key[0] < unsorted_data[j][0]:
+                    unsorted_data[j + 1] = unsorted_data[j]
+                    j -= 1
+                
+                unsorted_data[j + 1] = key
+            
+            sorted_data = unsorted_data
+
+            for row in self.tree.get_children():
+                self.tree.delete(row)
+
+            for data in sorted_data:
+                print(data)
+                data_index = data[1]
+                wheel_data = robot._wheels[wheel_index].data[data_index]
+                self.tree.insert("", "end", values=(wheel_data._timestamp, wheel_data._angle, wheel_data._speed))
+            
+            self.error_label2.config(text="Data sorted successfully")
+        
+        except Exception as e:
+            self.error_label3.config(text="Error sorting data")
+            print("Error: " + str(e))
 
     def import_path_data(self):
         try:
@@ -397,7 +468,7 @@ class GUI:
             self.error_label2.config(text="Error exporting data")
             print("Error: " + str(e))
 
-    def populate_table(self):
+    def populate_table(self, data = None):
         try:
             if (self.robot_dropdown.get() == "Select a robot"):
                 self.error_label2.config(text="Please select a robot")
