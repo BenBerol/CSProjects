@@ -388,7 +388,6 @@ class GUI:
                 self.points = []
                 for point in data:
                     self.points.append(pp.PathPoint(point["x"], point["y"], point["angle"]))
-                self.populate_path()
                 self.points_index = 0
                 for point in self.points:
                     if not self.path_points_list[self.points_index].visible:
@@ -397,6 +396,8 @@ class GUI:
                     self.path_points_list[self.points_index].set_text(point.get_y(), 1)
                     self.path_points_list[self.points_index].set_text(point.get_angle(), 2)
                     self.points_index += 1
+                self.populate_path()
+
 
         except Exception as e:
             self.error_label3.config(text="Error importing data")
