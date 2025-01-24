@@ -317,7 +317,6 @@ class GUI:
         self.import_button.pack(side=tk.LEFT)
 
         self.root.mainloop()
-        print("GUI initialized")
 
     def sort_data(self):
         try:
@@ -369,7 +368,6 @@ class GUI:
                 self.tree.delete(row)
 
             for data in sorted_data:
-                print(data)
                 data_index = data[1]
                 wheel_data = robot._wheels[wheel_index].data[data_index]
                 self.tree.insert("", "end", values=(wheel_data._timestamp, wheel_data._angle, wheel_data._speed))
