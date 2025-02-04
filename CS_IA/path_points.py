@@ -1,7 +1,7 @@
 import math
 
-class PathPoint:
 
+class PathPoint:
     """
     A class representing the path points the robot will follow
 
@@ -25,24 +25,24 @@ class PathPoint:
         self.x = x
         self.y = y
         self.angle = angle
-    
+
     def compute_angle(self):
         return math.degrees(math.atan2(self.y, self.x))
 
     def set_x(self, x):
         self.x = x
-    
+
     def set_y(self, y):
         self.y = y
-    
+
     def set_angle(self, angle):
         self.angle = angle
-    
+
     def get_x(self):
         return self.x
-    
+
     def get_y(self):
         return self.y
-    
+
     def get_angle(self):
         return self.angle

@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import font
 
 
-class InputBox():
+class InputBox:
     """
     A class representing an input box in a tkinter GUI.
 
@@ -38,14 +38,20 @@ class InputBox():
     """
 
     def __init__(
-            self, tab: tk.Frame, label: str = None, font: font = None,
-            numEntries: int = 1, entryTexts: list = None,
-            frame_side=None, input_side=None, visible: bool = True):
+        self,
+        tab: tk.Frame,
+        label: str = None,
+        font: font = None,
+        numEntries: int = 1,
+        entryTexts: list = None,
+        frame_side=None,
+        input_side=None,
+        visible: bool = True,
+    ):
 
         self.tab = tab
         self.label = label
-        self.font = font if font is not None else \
-            tk.font.Font(family="Arial", size=12)
+        self.font = font if font is not None else tk.font.Font(family="Arial", size=12)
         self.numEntries = numEntries
         self.entryTexts = entryTexts if entryTexts is not None else []
         self.frame_side = frame_side
@@ -58,14 +64,14 @@ class InputBox():
 
     def create_input_box(self, text=None):
         self.entry_frame = tk.Frame(self.tab)
-        if (self.frame_side is not None):
+        if self.frame_side is not None:
             self.entry_frame.pack(side=self.frame_side)
         else:
             self.entry_frame.pack()
 
-        if (self.visible is True):
+        if self.visible is True:
             self.entry_label = tk.Label(self.entry_frame, text=text, font=self.font)
-            if (self.input_side is not None):
+            if self.input_side is not None:
                 self.entry_label.pack(side=self.input_side)
             else:
                 self.entry_label.pack()
@@ -75,7 +81,7 @@ class InputBox():
 
     def add_entry(self, entry_frame, index=0):
         entry_textbox = tk.Entry(entry_frame, font=self.font, width=10)
-        if (self.input_side is not None):
+        if self.input_side is not None:
             entry_textbox.pack(side=self.input_side)
         else:
             entry_textbox.pack()
@@ -110,11 +116,15 @@ class InputBox():
 
     def set_font(self, font: tk.font.Font, index=0):
         self.entry_textboxes[index].config(font=font)
-    
+
+    def set_font(self, font: tk.font.Font):
+        for entry in self.entry_textboxes:
+            entry.config(font=font)
+
     def make_visible(self):
         self.visible = True
         self.entry_label = tk.Label(self.entry_frame, text=self.label, font=self.font)
-        if (self.input_side is not None):
+        if self.input_side is not None:
             self.entry_label.pack(side=self.input_side)
         else:
             self.entry_label.pack()
@@ -139,8 +149,16 @@ class PointBox(InputBox):
     """
 
     def __init__(
-            self, tab: tk.Frame, point_number, font: font = None, visible: bool = False):
+        self, tab: tk.Frame, point_number, font: font = None, visible: bool = False
+    ):
         self.point_number = point_number
         super().__init__(
-            tab, f"Point {point_number}", font, 3,
-            ["Horiz. (m)", "Vert. (m)", "Degrees"], tk.TOP, tk.LEFT, visible=visible)
+            tab,
+            f"Point {point_number}",
+            font,
+            3,
+            ["Horiz. (m)", "Vert. (m)", "Degrees"],
+            tk.TOP,
+            tk.LEFT,
+            visible=visible,
+        )
