@@ -1,6 +1,6 @@
 # Computer Science Projects
 
-This repository contains a collection of various projects that I have developed while learning Computer Science.
+This repository contains a collection of various projects that I have developed while learning computer science in highschool.
 
 ## Projects
 
