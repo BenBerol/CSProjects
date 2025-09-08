@@ -13,6 +13,7 @@ Each directory in the repository represents a separate project. Here's a brief o
 5. **EconomicMachineLearning**: A python based linear regression learning model designed to predict the housing affordability index given user submitted economic factors. Designed for Hack for the Homeless (2nd Place)
 6. **CS_IA** My working folder as I begin developing my internal assessment project for HL IB Computer Science
 7. **Agario**: A remake of the Agario game using javascript canvas a game engine with a math focus to teach different number bases 
+8. **Climbing Biomechanics** A climbing biomechanics analysis pipeline that overlays motion-tracking data on climbing videos to study climbing technique, body positioning, and efficiency. ([Link to pipeline in use](https://youtu.be/EXuvL7wGgsc))
 
 
 ## Installation and Setup
