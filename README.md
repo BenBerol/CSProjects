@@ -1,7 +1,6 @@
 # Computer Science Projects
 
-This repository contains a collection of various projects that I have developed while learning computer science in highschool.
-
+This repository contains a collection of various projects that I have developed
 ## Projects
 
 Each directory in the repository represents a separate project. Here's a brief overview of each:
@@ -13,8 +12,6 @@ Each directory in the repository represents a separate project. Here's a brief o
 5. **Mastermind** A java recreation of the game Mastermind that stores game results in json files providing data for the computer to use for different game difficulties. The computer learns off of previous games to determine easy versus hard starting setups
 6. **EconomicMachineLearning**: A python based linear regression learning model designed to predict the housing affordability index given user submitted economic factors. Designed for Hack for the Homeless (2nd Place)
 7. **CS_IA** My working folder as I begin developing my internal assessment project for HL IB Computer Science
-8. **Agario**: A remake of the Agario game using javascript canvas a game engine with a math focus to teach different number bases 
-
 
 ## Installation and Setup
 
