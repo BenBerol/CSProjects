@@ -11,7 +11,7 @@ Each directory in the repository represents a separate project. Here's a brief o
 4. **ExtendedEssay** The python code I used to model a version of Shor's algorithm for non-quantum computers and test the efficiency on a classical computer
 5. **Mastermind** A java recreation of the game Mastermind that stores game results in json files providing data for the computer to use for different game difficulties. The computer learns off of previous games to determine easy versus hard starting setups
 6. **EconomicMachineLearning**: A python based linear regression learning model designed to predict the housing affordability index given user submitted economic factors. Designed for Hack for the Homeless (2nd Place)
-7. **CS_IA** My working folder as I begin developing my internal assessment project for HL IB Computer Science
+7. **CS_IA** An interactive model of the behavior of a swerve drive robot using a physics simulation that computes the rotation and velocity of each wheel alongside a visualization of the motion
 
 ## Installation and Setup
 
